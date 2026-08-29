@@ -48,17 +48,52 @@ if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname.endsWith(".supabase.c
   process.exit(1);
 }
 
-const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-  headers: {
-    apikey: supabaseAnonKey,
-    Authorization: `Bearer ${supabaseAnonKey}`,
-  },
-});
+const projectUrl = `${parsedUrl.protocol}//${parsedUrl.host}`;
+
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 10000);
+
+let response;
+let authResponse;
+
+try {
+  response = await fetch(`${projectUrl}/rest/v1/`, {
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+    signal: controller.signal,
+  });
+
+  authResponse = await fetch(`${projectUrl}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseAnonKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: "invalid@example.com",
+      password: "invalid-password",
+    }),
+    signal: controller.signal,
+  });
+} catch (error) {
+  clearTimeout(timeout);
+  console.log(`SUPABASE_HOST=${parsedUrl.hostname.replace(/^[^.]+/, "***")}`);
+  console.log(`SUPABASE_PATH=${parsedUrl.pathname}`);
+  console.log(`CONNECTION_OK=false`);
+  console.error(error instanceof Error ? error.message : "Falha ao conectar no Supabase.");
+  process.exit(1);
+}
+
+clearTimeout(timeout);
 
 console.log(`SUPABASE_HOST=${parsedUrl.hostname.replace(/^[^.]+/, "***")}`);
+console.log(`SUPABASE_PATH=${parsedUrl.pathname}`);
 console.log(`HTTP_STATUS=${response.status}`);
+console.log(`AUTH_STATUS=${authResponse.status}`);
 
-if (response.status >= 200 && response.status < 500) {
+if (response.status >= 200 && response.status < 500 && authResponse.status >= 400 && authResponse.status < 500) {
   console.log("CONNECTION_OK=true");
 } else {
   console.log("CONNECTION_OK=false");

@@ -1,21 +1,29 @@
 type PublicEnv = {
   supabaseUrl: string;
   supabaseAnonKey: string;
+  adminEmail: string;
 };
 
-function getRequiredEnv(name: string): string {
-  const value = process.env[name];
+function getRequiredEnv(...names: string[]): string {
+  const value = names.map((name) => process.env[name]).find(Boolean);
 
   if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
+    throw new Error(`Missing required environment variable: ${names.join(" or ")}`);
   }
 
   return value;
 }
 
+export function normalizeSupabaseProjectUrl(value: string): string {
+  const url = new URL(value.trim());
+
+  return `${url.protocol}//${url.host}`;
+}
+
 export function getPublicEnv(): PublicEnv {
   return {
-    supabaseUrl: getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    supabaseAnonKey: getRequiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    supabaseUrl: normalizeSupabaseProjectUrl(getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL")),
+    supabaseAnonKey: getRequiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+    adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "admin@ezzionimports.com",
   };
 }

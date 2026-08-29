@@ -1,7 +1,6 @@
 "use client";
 
 import { FiSearch } from "react-icons/fi";
-
 import { storeConfig } from "@/core/theme/tokens";
 import { Brand } from "@/features/catalog/presentation/components/brand";
 import { WhatsAppLabel } from "@/features/catalog/presentation/components/whatsapp-label";
@@ -41,12 +40,14 @@ export function CatalogHeader({
           <FiSearch aria-hidden="true" className="text-[18px]" />
         </label>
 
-        <button
-          className="topbar-whatsapp hidden md:flex"
-          onClick={() => window.open(`https://wa.me/${storeConfig.whatsappPhone}`, "_blank", "noopener,noreferrer")}
-        >
-          <WhatsAppLabel>FALAR NO WHATSAPP</WhatsAppLabel>
-        </button>
+        <div className="hidden items-center gap-2 md:flex">
+          <button
+            className="topbar-whatsapp"
+            onClick={() => window.open(`https://wa.me/${storeConfig.whatsappPhone}`, "_blank", "noopener,noreferrer")}
+          >
+            <WhatsAppLabel>FALAR NO WHATSAPP</WhatsAppLabel>
+          </button>
+        </div>
       </header>
 
       <nav className="flex h-12 items-center gap-[25px] overflow-auto border-y border-[#242424] bg-[var(--color-foreground)] px-[14px] md:gap-11 md:px-8">
