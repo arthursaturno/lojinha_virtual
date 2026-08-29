@@ -1,40 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), Arial, sans-serif;
+  --font-display: var(--font-bebas), Impact, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html {
-  height: 100%;
+  --color-background: #ffffff;
+  --color-foreground: #070707;
+  --color-lime: #cbec02;
+  --color-border: #dedede;
+  --color-muted: #666666;
+  --color-stock: #28a337;
 }
 
 html,
 body {
+  min-width: 320px;
+  min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
 }
 
 body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  color: var(--color-foreground);
+  background: var(--color-background);
+  font-family: var(--font-inter), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 a {
@@ -42,8 +40,44 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.whatsapp-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.whatsapp-label svg {
+  flex: 0 0 auto;
+  width: 19px;
+  height: 19px;
+}
+
+.topbar-whatsapp {
+  width: 180px;
+  height: 40px;
+  flex: 0 0 180px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #414141;
+  background: transparent;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
 }

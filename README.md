@@ -522,6 +522,8 @@ Regras principais:
 | Next.js | Framework da aplicaÃ§Ã£o |
 | React | ConstruÃ§Ã£o da interface |
 | TypeScript | Tipagem e desenvolvimento |
+| Tailwind CSS | Estilizacao responsiva da interface |
+| React Icons | Icones da interface e WhatsApp |
 | Supabase | Backend as a Service |
 | PostgreSQL | Banco de dados |
 | Supabase Auth | AutenticaÃ§Ã£o administrativa |
