@@ -13,6 +13,7 @@ import { initialCatalogViewState } from "@/features/catalog/presentation/viewmod
 
 const allCategory = "Todos";
 const mainCategory = "Roupas";
+const pageSize = 10;
 const catalogCategories = [mainCategory, "Camisetas", "Jaquetas", "Tenis", "Acessorios", "Bolsas", allCategory];
 
 function toggleListValue(values: string[], value: string): string[] {
@@ -93,6 +94,13 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
       }, {}),
     [categories, initialProducts],
   );
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const currentPage = Math.min(state.currentPage, totalPages);
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+
+    return filteredProducts.slice(start, start + pageSize);
+  }, [currentPage, filteredProducts]);
 
   const selectedVariant = useMemo(() => {
     const product = state.selectedProduct;
@@ -119,27 +127,77 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
       selectedVariant &&
       selectedVariant.stockQuantity > 0,
   );
+  const activeUnitPrice = selectedVariant?.price ?? state.selectedProduct?.price ?? 0;
+  const orderTotal = activeUnitPrice * state.selection.quantity;
 
   function updateQuery(query: string) {
-    setState((current) => ({ ...current, query }));
+    setState((current) => ({ ...current, query, currentPage: 1 }));
   }
 
   function updateCategory(category: string) {
-    setState((current) => ({ ...current, category }));
+    setState((current) => ({ ...current, category, currentPage: 1 }));
   }
 
   function updateSort(sort: CatalogSortOption) {
-    setState((current) => ({ ...current, sort }));
+    setState((current) => ({ ...current, sort, currentPage: 1 }));
+  }
+
+  function resetToFirstPage() {
+    setState((current) => ({ ...current, currentPage: 1 }));
+  }
+
+  function updateCurrentPage(currentPage: number) {
+    setState((current) => ({
+      ...current,
+      currentPage: Math.min(Math.max(1, currentPage), totalPages),
+    }));
   }
 
   function updateSelection(selection: Partial<ProductSelection>) {
-    setState((current) => ({
-      ...current,
-      selection: {
+    setState((current) => {
+      const nextSelection = {
         ...current.selection,
         ...selection,
-      },
-    }));
+      };
+      const nextVariant = current.selectedProduct?.variants.find(
+        (item) =>
+          item.size === nextSelection.size &&
+          item.color === nextSelection.color &&
+          item.model === nextSelection.model &&
+          item.isActive,
+      );
+      const maxQuantity = Math.max(1, nextVariant?.stockQuantity ?? current.selectedProduct?.stockQuantity ?? 1);
+
+      return {
+        ...current,
+        selection: {
+          ...nextSelection,
+          quantity: Math.min(nextSelection.quantity, maxQuantity),
+        },
+      };
+    });
+  }
+
+  function updateQuantity(quantity: number) {
+    setState((current) => {
+      const variant = current.selectedProduct?.variants.find(
+        (item) =>
+          item.size === current.selection.size &&
+          item.color === current.selection.color &&
+          item.model === current.selection.model &&
+          item.isActive,
+      );
+      const maxQuantity = Math.max(1, variant?.stockQuantity ?? current.selectedProduct?.stockQuantity ?? 1);
+      const nextQuantity = Math.min(Math.max(1, quantity), maxQuantity);
+
+      return {
+        ...current,
+        selection: {
+          ...current.selection,
+          quantity: nextQuantity,
+        },
+      };
+    });
   }
 
   function openProduct(product: CatalogProduct) {
@@ -164,6 +222,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
       query: "",
       category: "Roupas",
       sort: "recent",
+      currentPage: 1,
     }));
     setSizeFilters([]);
     setColorFilters([]);
@@ -171,9 +230,33 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
     setMaxPrice(450);
   }
 
+  function updateMaxPrice(value: number) {
+    setMaxPrice(value);
+    resetToFirstPage();
+  }
+
+  function toggleSizeFilter(size: string) {
+    setSizeFilters((current) => toggleListValue(current, size));
+    resetToFirstPage();
+  }
+
+  function toggleColorFilter(color: string) {
+    setColorFilters((current) => toggleListValue(current, color));
+    resetToFirstPage();
+  }
+
+  function toggleModelFilter(model: string) {
+    setModelFilters((current) => toggleListValue(current, model));
+    resetToFirstPage();
+  }
+
   return {
     state,
     filteredProducts,
+    paginatedProducts,
+    pageSize,
+    totalPages,
+    currentPage,
     categories,
     categoryCount,
     availableSizes,
@@ -185,19 +268,24 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
     maxPrice,
     selectedVariant,
     isSelectionReady,
+    activeUnitPrice,
+    orderTotal,
+    formattedOrderTotal: formatCurrency(orderTotal),
     formattedMaxPrice: formatCurrency(maxPrice),
     actions: {
       updateQuery,
       updateCategory,
       updateSort,
+      updateCurrentPage,
       updateSelection,
+      updateQuantity,
       openProduct,
       closeProduct,
       clearFilters,
-      updateMaxPrice: setMaxPrice,
-      toggleSizeFilter: (size: string) => setSizeFilters((current) => toggleListValue(current, size)),
-      toggleColorFilter: (color: string) => setColorFilters((current) => toggleListValue(current, color)),
-      toggleModelFilter: (model: string) => setModelFilters((current) => toggleListValue(current, model)),
+      updateMaxPrice,
+      toggleSizeFilter,
+      toggleColorFilter,
+      toggleModelFilter,
     },
   };
 }

@@ -68,15 +68,25 @@ button:disabled {
   height: 19px;
 }
 
+.floating-whatsapp .whatsapp-label {
+  gap: 0;
+  line-height: 0;
+}
+
+.floating-whatsapp .whatsapp-label svg {
+  width: 30px;
+  height: 30px;
+}
+
 .topbar-whatsapp {
   width: 180px;
   height: 40px;
   flex: 0 0 180px;
   align-items: center;
   justify-content: center;
-  border: 1px solid #414141;
-  background: transparent;
-  color: #ffffff;
+  border: 1px solid var(--color-lime);
+  background: var(--color-lime);
+  color: var(--color-foreground);
   font-size: 10px;
   font-weight: 800;
   line-height: 1;

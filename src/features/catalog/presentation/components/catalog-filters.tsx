@@ -3,6 +3,7 @@
 import { FilterCheckbox } from "@/features/catalog/presentation/components/filter-checkbox";
 
 type CatalogFiltersProps = {
+  className?: string;
   categories: string[];
   categoryCount: Record<string, number>;
   activeCategory: string;
@@ -30,6 +31,7 @@ const swatchClassByColor: Record<string, string> = {
 };
 
 export function CatalogFilters({
+  className = "",
   categories,
   categoryCount,
   activeCategory,
@@ -49,7 +51,7 @@ export function CatalogFilters({
   onClear,
 }: CatalogFiltersProps) {
   return (
-    <aside className="hidden border-r border-[var(--color-border)] px-6 py-[19px] md:block">
+    <aside className={`border-r border-[var(--color-border)] px-6 py-[19px] ${className}`}>
       <div className="flex justify-between text-[9px]">
         <strong>FILTRAR</strong>
         <button className="text-[#777]" onClick={onClear}>

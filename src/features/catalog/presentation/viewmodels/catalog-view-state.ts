@@ -8,6 +8,7 @@ export type ProductSelection = {
   size: string;
   color: string;
   model: string;
+  quantity: number;
 };
 
 export type CatalogViewState = {
@@ -18,6 +19,7 @@ export type CatalogViewState = {
   selectedProduct: CatalogProduct | null;
   selection: ProductSelection;
   sort: CatalogSortOption;
+  currentPage: number;
   errorMessage?: string;
 };
 
@@ -31,6 +33,8 @@ export const initialCatalogViewState: CatalogViewState = {
     size: "",
     color: "",
     model: "",
+    quantity: 1,
   },
   sort: "recent",
+  currentPage: 1,
 };

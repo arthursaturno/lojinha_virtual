@@ -6,21 +6,37 @@ import type { CatalogSortOption } from "@/features/catalog/presentation/viewmode
 
 type CatalogProductGridProps = {
   products: CatalogProduct[];
+  totalProducts: number;
   sort: CatalogSortOption;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
   onSortChange(sort: CatalogSortOption): void;
+  onPageChange(page: number): void;
   onOpenProduct(product: CatalogProduct): void;
 };
 
 export function CatalogProductGrid({
   products,
+  totalProducts,
   sort,
+  currentPage,
+  totalPages,
+  pageSize,
   onSortChange,
+  onPageChange,
   onOpenProduct,
 }: CatalogProductGridProps) {
+  const firstItem = totalProducts === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const lastItem = Math.min(currentPage * pageSize, totalProducts);
+
   return (
     <section className="px-3 pb-[90px] md:px-[22px] md:pb-10">
       <div className="flex h-[50px] items-center justify-between text-[10px] md:h-[51px]">
-        <strong>{products.length} produtos encontrados</strong>
+        <strong>
+          {totalProducts} produtos encontrados
+          {totalProducts > 0 ? ` (${firstItem}-${lastItem})` : ""}
+        </strong>
         <select
           value={sort}
           onChange={(event) => onSortChange(event.target.value as CatalogSortOption)}
@@ -41,6 +57,28 @@ export function CatalogProductGrid({
       ) : (
         <div className="px-4 py-20 text-center text-sm">Nenhum produto encontrado.</div>
       )}
+
+      {totalPages > 1 ? (
+        <div className="mt-7 flex items-center justify-center gap-2 text-[10px] font-black">
+          <button
+            className="h-9 border border-[#d7d7d7] px-3 disabled:text-[#aaa]"
+            disabled={currentPage <= 1}
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            ANTERIOR
+          </button>
+          <span className="grid h-9 min-w-9 place-items-center bg-[var(--color-lime)] px-3">
+            {currentPage}/{totalPages}
+          </span>
+          <button
+            className="h-9 border border-[#d7d7d7] px-3 disabled:text-[#aaa]"
+            disabled={currentPage >= totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            PROXIMA
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }
