@@ -23,6 +23,11 @@ describe("GetAdministrationProductsUseCase", () => {
           },
         ]),
       ),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteImages: vi.fn(),
+      uploadImage: vi.fn(),
     };
     const useCase = new GetAdministrationProductsUseCase(repository);
 

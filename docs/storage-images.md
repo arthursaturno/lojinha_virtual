@@ -79,6 +79,17 @@ Quando implementarmos upload, a estrategia recomendada e gerar duas versoes:
 
 Isso permite que a home carregue rapido e que a pagina do produto continue exibindo uma foto bonita.
 
+## Implementacao Atual
+
+O editor administrativo prepara a foto no navegador somente depois da confirmacao do recorte:
+
+- detalhe em WebP, 1200 x 1500, qualidade 82%;
+- arquivo original limitado a 15 MB;
+- a versao de detalhe e enviada ao bucket publico `product-images` em caminho separado pelo usuario autenticado;
+- a tabela atual armazena uma URL por foto, usada tambem na listagem;
+- miniaturas dedicadas permanecem uma evolucao futura, quando a tabela for expandida de forma planejada.
+
+
 ## Regras Para Implementacao
 
 - Validar tamanho maximo no upload;

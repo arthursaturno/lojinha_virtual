@@ -6,6 +6,8 @@ import { FiCrop, FiImage, FiMinus, FiPlus, FiTrash2, FiUpload, FiX } from "react
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
+import { createProductImageUpload } from "@/core/utils/images/create-product-image-upload";
+import type { AdministrationProductImageUpload } from "@/features/administration/domain/entities/administration-product-image-upload";
 import {
   administrationCategoryOptions,
   administrationColorOptions,
@@ -31,6 +33,8 @@ type AdministrationProductDrawerProps = {
   onToggleActive(): void;
   onToggleOption(field: "sizes" | "colors" | "models", value: string): void;
   onImageChange(index: 0 | 1 | 2, value: string): void;
+  onImageUpload(index: 0 | 1 | 2, upload: AdministrationProductImageUpload): Promise<boolean>;
+  onImageUploadFailure(message: string): void;
   onImageCropChange(
     index: 0 | 1 | 2,
     patch: { zoom?: number; offsetX?: number; offsetY?: number },
@@ -66,6 +70,7 @@ type CropModalState = {
   imageUrl: string;
   crop: AdministrationImageCrop;
   isPendingUpload: boolean;
+  source?: Blob;
 };
 
 function TextField({ label, value, placeholder, onChange }: TextFieldProps) {
@@ -218,11 +223,14 @@ export function AdministrationProductDrawer({
   onToggleActive,
   onToggleOption,
   onImageChange,
+  onImageUpload,
+  onImageUploadFailure,
   onImageCropChange,
   onDelete,
 }: AdministrationProductDrawerProps) {
   const createdBlobUrlsRef = useRef<string[]>([]);
   const [cropModalState, setCropModalState] = useState<CropModalState | null>(null);
+  const [isApplyingCrop, setIsApplyingCrop] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -273,6 +281,7 @@ export function AdministrationProductDrawer({
       imageUrl: previewUrl,
       crop: { zoom: 1, offsetX: 0, offsetY: 0 },
       isPendingUpload: true,
+      source: file,
     });
   }
 
@@ -325,20 +334,37 @@ export function AdministrationProductDrawer({
     });
   }
 
-  function handleApplyCrop() {
+  async function handleApplyCrop() {
     if (!cropModalState) {
       return;
     }
 
-    const { index, imageUrl, crop, isPendingUpload } = cropModalState;
+    const { index, imageUrl, crop, source } = cropModalState;
+    setIsApplyingCrop(true);
 
-    if (isPendingUpload) {
-      releaseImagePreview(draft.imageUrls[index]);
-      onImageChange(index, imageUrl);
+    try {
+      let imageSource = source;
+      if (!imageSource) {
+        const response = await fetch(imageUrl);
+        if (!response.ok) throw new Error("Nao foi possivel carregar a foto para recorte.");
+        imageSource = await response.blob();
+      }
+      const upload = await createProductImageUpload(imageSource, crop);
+      const wasUploaded = await onImageUpload(index, upload);
+      if (!wasUploaded) return;
+
+      if (cropModalState.isPendingUpload) {
+        releaseImagePreview(imageUrl);
+      }
+      onImageCropChange(index, { zoom: 1, offsetX: 0, offsetY: 0 });
+      setCropModalState(null);
+    } catch (error) {
+      onImageUploadFailure(
+        error instanceof Error ? error.message : "Nao foi possivel preparar a foto para envio.",
+      );
+    } finally {
+      setIsApplyingCrop(false);
     }
-
-    onImageCropChange(index, crop);
-    setCropModalState(null);
   }
 
   return (
@@ -537,6 +563,7 @@ export function AdministrationProductDrawer({
                       src={imageUrl}
                       alt={`Foto ${index + 1}`}
                       fill
+                      sizes="132px"
                       className="object-cover"
                       style={{
                         objectPosition: `calc(50% + ${draft.imageCrops[index].offsetX}px) calc(50% + ${draft.imageCrops[index].offsetY}px)`,
@@ -641,7 +668,7 @@ export function AdministrationProductDrawer({
             style={{ fontSize: administrationTypography.action }}
             onClick={onSave}
           >
-            {saveStatus === "saved" ? "SALVO OK" : "SALVAR PRODUTO"}
+            {saveStatus === "saved" ? "SALVO" : "SALVAR PRODUTO"}
           </button>
           </div>
         </div>
@@ -691,6 +718,7 @@ export function AdministrationProductDrawer({
                   src={cropModalState.imageUrl}
                   alt={`Recorte da foto ${cropModalState.index + 1}`}
                   fill
+                  sizes="(max-width: 768px) calc(100vw - 32px), 720px"
                   className="object-cover"
                   style={{
                     objectPosition: `calc(50% + ${cropModalState.crop.offsetX}px) calc(50% + ${cropModalState.crop.offsetY}px)`,
@@ -777,9 +805,10 @@ export function AdministrationProductDrawer({
                     type="button"
                     className="h-11 bg-[var(--color-lime)] px-4 font-black text-black"
                     style={{ fontSize: administrationTypography.action }}
-                    onClick={handleApplyCrop}
+                      onClick={handleApplyCrop}
+                    disabled={isApplyingCrop}
                   >
-                    USAR RECORTE
+                    {isApplyingCrop ? "ENVIANDO..." : "USAR RECORTE"}
                   </button>
                 </div>
               </div>

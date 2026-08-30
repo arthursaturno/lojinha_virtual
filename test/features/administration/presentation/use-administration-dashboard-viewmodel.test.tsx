@@ -160,6 +160,23 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.state.draft.imageCrops[0]).toEqual({ zoom: 1.8, offsetX: 0, offsetY: -12 });
   });
 
+  it("queues a stored image for deletion when removed from the draft", () => {
+    const remoteProducts = [{
+      ...products[0],
+      imageUrls: ["https://example.supabase.co/storage/v1/object/public/product-images/photo.webp"],
+    }];
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(remoteProducts));
+
+    act(() => {
+      result.current.actions.openExistingProduct("1");
+      result.current.actions.updateDraftImage(0, "");
+    });
+
+    expect(result.current.state.pendingImageDeletionUrls).toEqual([
+      "https://example.supabase.co/storage/v1/object/public/product-images/photo.webp",
+    ]);
+  });
+
   it("creates a product in local state from the drawer draft", () => {
     const { result } = renderHook(() => useAdministrationDashboardViewModel(products));
 
@@ -181,6 +198,27 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.state.products[0].description).toBe("Descricao nova");
     expect(result.current.state.products[0].category).toBe("Camisas");
     expect(result.current.state.feedbackMessage).toBe("Produto criado no MVP local.");
+  });
+
+  it("distributes the exact selected stock quantity between variants", () => {
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(products));
+
+    act(() => {
+      result.current.actions.openNewProductDrawer();
+      result.current.actions.updateDraftField("name", "Camisa com variacoes");
+      result.current.actions.updateDraftField("category", "Camisas");
+      result.current.actions.toggleDraftListField("sizes", "P");
+      result.current.actions.toggleDraftListField("sizes", "M");
+      result.current.actions.toggleDraftListField("colors", "Preto");
+      result.current.actions.toggleDraftListField("models", "Regular");
+      result.current.actions.incrementDraftStock();
+      result.current.actions.incrementDraftStock();
+      result.current.actions.incrementDraftStock();
+      result.current.actions.saveSelections();
+    });
+
+    expect(result.current.state.products[0].variants.map((variant) => variant.stockQuantity)).toEqual([2, 1]);
+    expect(result.current.state.products[0].totalStockQuantity).toBe(3);
   });
 
   it("deletes the selected product from local state", () => {

@@ -1,5 +1,5 @@
 import { Result } from "@/core/result/result";
-import type { CatalogProductsDataSource } from "@/features/catalog/data/datasources/catalog-products-mock-datasource";
+import type { CatalogProductsDataSource } from "@/features/catalog/data/datasources/catalog-products-supabase-datasource";
 import { catalogProductToDomain } from "@/features/catalog/data/dtos/catalog-product-dto";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import type { CatalogProductsRepository } from "@/features/catalog/domain/repositories/catalog-products-repository";

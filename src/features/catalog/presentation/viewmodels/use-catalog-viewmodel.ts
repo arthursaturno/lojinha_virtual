@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { formatCurrency } from "@/core/utils/format/currency";
+import type { StoreFilterOptions } from "@/core/store-filters/store-filter-options";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import type {
   CatalogSortOption,
@@ -22,7 +23,7 @@ function toggleListValue(values: string[], value: string): string[] {
     : [...values, value];
 }
 
-export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
+export function useCatalogViewModel(initialProducts: CatalogProduct[], configuredFilters?: StoreFilterOptions) {
   const [state, setState] = useState<CatalogViewState>({
     ...initialCatalogViewState,
     status: "success",
@@ -33,21 +34,24 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
   const [modelFilters, setModelFilters] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(450);
 
-  const categories = useMemo(() => catalogCategories, []);
+  const categories = useMemo(
+    () => [mainCategory, ...(configuredFilters?.category ?? catalogCategories.filter((item) => item !== mainCategory && item !== allCategory)), allCategory],
+    [configuredFilters],
+  );
 
   const availableSizes = useMemo(
-    () => Array.from(new Set(initialProducts.flatMap((product) => product.variants.map((variant) => variant.size)))),
-    [initialProducts],
+    () => (configuredFilters?.size ?? Array.from(new Set(initialProducts.flatMap((product) => product.variants.map((variant) => variant.size))))),
+    [configuredFilters, initialProducts],
   );
 
   const availableColors = useMemo(
-    () => Array.from(new Set(initialProducts.flatMap((product) => product.variants.map((variant) => variant.color)))),
-    [initialProducts],
+    () => (configuredFilters?.color ?? Array.from(new Set(initialProducts.flatMap((product) => product.variants.map((variant) => variant.color))))),
+    [configuredFilters, initialProducts],
   );
 
   const availableModels = useMemo(
-    () => Array.from(new Set(initialProducts.flatMap((product) => product.variants.map((variant) => variant.model)))),
-    [initialProducts],
+    () => (configuredFilters?.model ?? Array.from(new Set(initialProducts.flatMap((product) => product.variants.map((variant) => variant.model))))),
+    [configuredFilters, initialProducts],
   );
 
   const filteredProducts = useMemo(() => {
@@ -57,7 +61,6 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
       const matchesQuery = product.name.toLowerCase().includes(normalizedQuery);
       const matchesCategory =
         state.category === allCategory || state.category === mainCategory || product.category === state.category;
-      const matchesPrice = product.price <= maxPrice;
       const matchesSize =
         sizeFilters.length === 0 ||
         product.variants.some((variant) => sizeFilters.includes(variant.size) && variant.stockQuantity > 0);
@@ -68,7 +71,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[]) {
         modelFilters.length === 0 ||
         product.variants.some((variant) => modelFilters.includes(variant.model) && variant.stockQuantity > 0);
 
-      return matchesQuery && matchesCategory && matchesPrice && matchesSize && matchesColor && matchesModel;
+      return matchesQuery && matchesCategory && matchesSize && matchesColor && matchesModel;
     });
 
     if (state.sort === "lowest-price") {

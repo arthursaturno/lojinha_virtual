@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
+import { createAdministrationProductActions } from "@/core/di/administration-browser";
 import { administrationLayout } from "@/core/theme/tokens";
 import { AdminSidebar } from "@/core/ui/components/admin-sidebar";
+import { AppToast } from "@/core/ui/components/app-toast";
 import type { AdministrationProduct } from "@/features/administration/domain/entities/administration-product";
 import { AdministrationHeader } from "@/features/administration/presentation/components/administration-header";
 import { AdministrationPagination } from "@/features/administration/presentation/components/administration-pagination";
@@ -26,7 +28,8 @@ export function AdministrationExperience({
   adminEmail,
   supabaseConfig,
 }: AdministrationExperienceProps) {
-  const viewModel = useAdministrationDashboardViewModel(products);
+  const productActions = useMemo(() => createAdministrationProductActions(supabaseConfig), [supabaseConfig]);
+  const viewModel = useAdministrationDashboardViewModel(products, productActions);
   const { state, actions } = viewModel;
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -76,11 +79,14 @@ export function AdministrationExperience({
           onToggleActive={actions.toggleDraftActive}
           onToggleOption={actions.toggleDraftListField}
           onImageChange={actions.updateDraftImage}
+          onImageUpload={actions.uploadDraftImage}
+          onImageUploadFailure={actions.reportImageUploadFailure}
           onImageCropChange={actions.updateDraftImageCrop}
           onDelete={actions.deleteSelectedProduct}
           onSave={actions.saveSelections}
         />
       </main>
+      {state.feedbackMessage ? <AppToast tone={state.saveStatus === "failure" ? "error" : "success"} message={state.feedbackMessage} onDismiss={actions.dismissFeedback} /> : null}
     </div>
   );
 }

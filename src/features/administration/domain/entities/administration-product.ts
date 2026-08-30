@@ -18,6 +18,8 @@ export type AdministrationProduct = {
   colorLabel: string;
   basePrice: number;
   imageUrls: string[];
+  thumbnailUrls?: string[];
+  imageCrops?: Array<{ zoom: number; offsetX: number; offsetY: number }>;
   badge?: string;
   isActive: boolean;
   totalStockQuantity: number;

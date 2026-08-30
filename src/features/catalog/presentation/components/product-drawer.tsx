@@ -93,7 +93,7 @@ export function ProductDrawer({
         </div>
 
         <div className="relative mt-[10px] h-[270px] bg-[#eee]">
-          <Image src={currentImage} alt={product.name} fill sizes="420px" className="object-cover" />
+          {currentImage ? <Image src={currentImage} alt={product.name} fill sizes="420px" className="object-cover" /> : null}
           <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 font-extrabold text-white" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
             {imageIndex + 1}/{product.images.length}
           </div>
@@ -128,7 +128,7 @@ export function ProductDrawer({
         </div>
 
         <div className="mt-2 grid grid-cols-6 gap-[7px]">
-          {product.images.map((image, index) => (
+          {product.images.filter(Boolean).map((image, index) => (
             <button
               key={image}
               type="button"
@@ -146,9 +146,16 @@ export function ProductDrawer({
         </span>
         <h2 className="my-2 text-xl font-extrabold">{product.name}</h2>
         <div className="text-2xl font-black">{formatCurrency(activePrice)}</div>
-        <p className="leading-normal text-[#555]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
-          a vista no PIX ou ate <b>6x de {formatCurrency(activePrice / 6)}</b> sem juros
-        </p>
+        {product.description?.trim() ? (
+          <section className="mt-4 border-y border-[var(--color-border)] py-4">
+            <h3 className="font-black text-[var(--color-foreground)]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
+              DESCRICAO DO PRODUTO
+            </h3>
+            <p className="mt-2 whitespace-pre-line leading-normal text-[var(--color-muted)]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
+              {product.description}
+            </p>
+          </section>
+        ) : null}
         <div className="mt-3 flex items-center justify-between bg-[#f7f7f5] px-3 py-3">
           <span className="font-black" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>TOTAL ({selection.quantity} PECAS)</span>
           <strong className="text-lg font-black">{formattedOrderTotal}</strong>
@@ -256,7 +263,7 @@ export function ProductDrawer({
             </>
           ) : null}
           <div className="relative h-[80vh] w-full max-w-5xl" onMouseDown={(event) => event.stopPropagation()}>
-            <Image src={currentImage} alt={product.name} fill sizes="100vw" className="object-contain" />
+            {currentImage ? <Image src={currentImage} alt={product.name} fill sizes="100vw" className="object-contain" /> : null}
           </div>
         </div>
       ) : null}

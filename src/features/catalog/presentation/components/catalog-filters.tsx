@@ -14,13 +14,10 @@ type CatalogFiltersProps = {
   sizeFilters: string[];
   colorFilters: string[];
   modelFilters: string[];
-  maxPrice: number;
-  formattedMaxPrice: string;
   onCategoryChange(category: string): void;
   onSizeToggle(size: string): void;
   onColorToggle(color: string): void;
   onModelToggle(model: string): void;
-  onMaxPriceChange(value: number): void;
   onClear(): void;
 };
 
@@ -29,6 +26,14 @@ const swatchClassByColor: Record<string, string> = {
   Branco: "border border-[#aaa] bg-white",
   Cinza: "bg-[#b9b9b9]",
   Verde: "bg-[#4c632e]",
+  Azul: "bg-[#2563eb]",
+  Bege: "bg-[#d7c6a5]",
+  Marrom: "bg-[#75452c]",
+  Rosa: "bg-[#ec7ba7]",
+  Amarelo: "bg-[#f4cf2f]",
+  Laranja: "bg-[#ea7a23]",
+  Vinho: "bg-[#7f1d36]",
+  Vermelho: "bg-[#d32f2f]",
 };
 
 export function CatalogFilters({
@@ -42,13 +47,10 @@ export function CatalogFilters({
   sizeFilters,
   colorFilters,
   modelFilters,
-  maxPrice,
-  formattedMaxPrice,
   onCategoryChange,
   onSizeToggle,
   onColorToggle,
   onModelToggle,
-  onMaxPriceChange,
   onClear,
 }: CatalogFiltersProps) {
   return (
@@ -91,7 +93,7 @@ export function CatalogFilters({
       </div>
 
       <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>COR</h4>
-      <div className="flex gap-[7px]">
+      <div className="flex flex-wrap gap-3">
         {colors.map((color) => (
           <button
             key={color}
@@ -114,17 +116,6 @@ export function CatalogFilters({
         />
       ))}
 
-      <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>PRECO</h4>
-      <input
-        min="150"
-        max="450"
-        step="10"
-        value={maxPrice}
-        type="range"
-        onChange={(event) => onMaxPriceChange(Number(event.target.value))}
-        className="w-full accent-[var(--color-lime)]"
-      />
-      <p className="mt-2 text-[#666]" style={{ fontSize: catalogTypography.filterItem }}>Ate {formattedMaxPrice}</p>
     </aside>
   );
 }

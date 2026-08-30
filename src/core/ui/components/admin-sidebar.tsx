@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FiArrowLeft, FiBox, FiMenu, FiSettings, FiX } from "react-icons/fi";
+import { FiArrowLeft, FiBox, FiMenu, FiSettings, FiSliders, FiX } from "react-icons/fi";
 
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
 import { appRoutes } from "@/core/router/app-routes";
 import { AdminSignOutButton } from "@/core/ui/components/admin-sign-out-button";
 
-export type AdminSidebarSection = "products" | "settings";
+export type AdminSidebarSection = "products" | "filters" | "settings";
 
 type AdminSidebarProps = {
   storeName: string;
@@ -34,6 +34,12 @@ const navigationItems = [
     section: "products" as const,
     href: appRoutes.adminProducts,
     icon: FiBox,
+  },
+    {
+    label: "Filtros",
+    section: "filters" as const,
+    href: appRoutes.adminFilters,
+    icon: FiSliders,
   },
   {
     label: "Configuracoes",
@@ -130,21 +136,7 @@ export function AdminSidebar({
         >
           <FiMenu aria-hidden="true" className="text-lg" />
         </button>
-        <div className="max-w-[180px] text-center">
-          <strong
-            className="font-display block break-words font-normal leading-none tracking-normal"
-            style={{ fontSize: administrationTypography.sidebarBrand }}
-          >
-            {storeName}
-          </strong>
-        </div>
-        <Link
-          className="grid size-9 place-items-center text-[var(--color-lime)]"
-          href={appRoutes.storefront}
-          aria-label="Voltar para a loja"
-        >
-          <FiArrowLeft aria-hidden="true" className="text-lg" />
-        </Link>
+        
       </div>
 
       <aside

@@ -3,7 +3,14 @@
 import { useMemo, useState } from "react";
 
 import { formatCurrencyInput } from "@/core/utils/format/currency-input";
+import { distributeStockQuantity } from "@/core/utils/numbers/distribute-stock-quantity";
 import type { AdministrationProduct } from "@/features/administration/domain/entities/administration-product";
+import type { CreateAdministrationProductUseCase } from "@/features/administration/domain/usecases/create-administration-product-usecase";
+import type { DeleteAdministrationProductUseCase } from "@/features/administration/domain/usecases/delete-administration-product-usecase";
+import type { DeleteAdministrationProductImagesUseCase } from "@/features/administration/domain/usecases/delete-administration-product-images-usecase";
+import type { UpdateAdministrationProductUseCase } from "@/features/administration/domain/usecases/update-administration-product-usecase";
+import type { AdministrationProductImageUpload } from "@/features/administration/domain/entities/administration-product-image-upload";
+import type { UploadAdministrationProductImageUseCase } from "@/features/administration/domain/usecases/upload-administration-product-image-usecase";
 import {
   emptyAdministrationProductDraft,
   initialAdministrationDashboardViewState,
@@ -19,6 +26,7 @@ function createDefaultImageCrop(): AdministrationImageCrop {
 
 function createDraftFromProduct(product: AdministrationProduct | undefined): AdministrationProductDraft {
   const imageUrls = product?.imageUrls.slice(0, 3) ?? [];
+  const thumbnailUrls = product?.thumbnailUrls?.slice(0, 3) ?? [];
   const sizes = product ? Array.from(new Set(product.variants.map((variant) => variant.size))) : [];
   const colors = product ? Array.from(new Set(product.variants.map((variant) => variant.color))) : [];
   const models = product ? Array.from(new Set(product.variants.map((variant) => variant.model))) : [];
@@ -34,7 +42,12 @@ function createDraftFromProduct(product: AdministrationProduct | undefined): Adm
     colors,
     models,
     imageUrls: [imageUrls[0] ?? "", imageUrls[1] ?? "", imageUrls[2] ?? ""],
-    imageCrops: [createDefaultImageCrop(), createDefaultImageCrop(), createDefaultImageCrop()],
+    thumbnailUrls: [thumbnailUrls[0] ?? "", thumbnailUrls[1] ?? "", thumbnailUrls[2] ?? ""],
+    imageCrops: [
+      product?.imageCrops?.[0] ?? createDefaultImageCrop(),
+      product?.imageCrops?.[1] ?? createDefaultImageCrop(),
+      product?.imageCrops?.[2] ?? createDefaultImageCrop(),
+    ],
   };
 }
 
@@ -51,10 +64,11 @@ function createProductFromDraft(
   const sizes = draft.sizes.length > 0 ? draft.sizes : ["UN"];
   const colors = draft.colors.length > 0 ? draft.colors : ["Padrao"];
   const models = draft.models.length > 0 ? draft.models : ["Basico"];
-  const variantCount = sizes.length * colors.length * models.length;
-  const stockPerVariant =
-    variantCount > 0 ? Math.max(1, Math.floor(draft.totalStockQuantity / variantCount) || 1) : 0;
   const price = parseCurrencyInput(draft.basePrice);
+  const variantOptions = sizes.flatMap((size) =>
+    colors.flatMap((color) => models.map((model) => ({ size, color, model }))),
+  );
+  const stockQuantities = distributeStockQuantity(draft.totalStockQuantity, variantOptions.length);
 
   return {
     id: selectedProductId ?? `draft-${Date.now()}`,
@@ -64,26 +78,45 @@ function createProductFromDraft(
     colorLabel: draft.colors[0] ?? "Sem cor",
     basePrice: price,
     imageUrls: draft.imageUrls.filter(Boolean),
+    thumbnailUrls: draft.imageUrls.reduce<string[]>((thumbnails, imageUrl, index) => {
+      if (imageUrl) thumbnails.push(draft.thumbnailUrls[index] || imageUrl);
+      return thumbnails;
+    }, []),
+    imageCrops: draft.imageUrls.reduce<AdministrationImageCrop[]>((crops, imageUrl, index) => {
+      if (imageUrl) crops.push(draft.imageCrops[index]);
+      return crops;
+    }, []),
     badge: draft.isActive ? "ATIVO" : "PAUSADO",
     isActive: draft.isActive,
     totalStockQuantity: draft.totalStockQuantity,
-    variants: sizes.flatMap((size, sizeIndex) =>
-      colors.flatMap((color, colorIndex) =>
-        models.map((model, modelIndex) => ({
-          id: `${selectedProductId ?? "draft"}-${sizeIndex}-${colorIndex}-${modelIndex}`,
-          size,
-          color,
-          model,
+    variants: variantOptions.map((variant, index) => ({
+          id: `${selectedProductId ?? "draft"}-${index}`,
+          size: variant.size,
+          color: variant.color,
+          model: variant.model,
           price,
-          stockQuantity: stockPerVariant,
-          status: stockPerVariant > 3 ? "in-stock" : "low-stock",
+          stockQuantity: stockQuantities[index],
+          status: stockQuantities[index] > 3 ? "in-stock" : "low-stock",
         })),
-      ),
-    ),
   };
 }
 
-export function useAdministrationDashboardViewModel(initialProducts: AdministrationProduct[]) {
+type AdministrationProductActions = {
+  create: CreateAdministrationProductUseCase;
+  update: UpdateAdministrationProductUseCase;
+  delete: DeleteAdministrationProductUseCase;
+  deleteImages: DeleteAdministrationProductImagesUseCase;
+  uploadImage: UploadAdministrationProductImageUseCase;
+};
+
+function isStoredProductImage(imageUrl: string): boolean {
+  return imageUrl.startsWith("http");
+}
+
+export function useAdministrationDashboardViewModel(
+  initialProducts: AdministrationProduct[],
+  productActions?: AdministrationProductActions,
+) {
   const [state, setState] = useState<AdministrationDashboardViewState>(() => ({
     ...initialAdministrationDashboardViewState,
     status: "success",
@@ -122,6 +155,10 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     setState((current) => ({ ...current, query, currentPage: 1 }));
   }
 
+  function dismissFeedback() {
+    setState((current) => ({ ...current, feedbackMessage: undefined }));
+  }
+
   function setCurrentPage(page: number) {
     setState((current) => ({ ...current, currentPage: Math.max(1, Math.min(page, totalPages)) }));
   }
@@ -136,6 +173,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       editorMode: "edit",
       saveStatus: "idle",
       feedbackMessage: undefined,
+      pendingImageDeletionUrls: [],
       draft: createDraftFromProduct(nextProduct),
     }));
   }
@@ -148,6 +186,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       editorMode: "create",
       saveStatus: "idle",
       feedbackMessage: undefined,
+      pendingImageDeletionUrls: [],
       draft: emptyAdministrationProductDraft,
     }));
   }
@@ -250,6 +289,11 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
         string,
         string,
       ];
+      const nextThumbnailUrls: [string, string, string] = [...current.draft.thumbnailUrls] as [
+        string,
+        string,
+        string,
+      ];
       const nextImageCrops = [...current.draft.imageCrops] as [
         AdministrationImageCrop,
         AdministrationImageCrop,
@@ -257,15 +301,21 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       ];
 
       nextImageUrls[index] = value;
+      nextThumbnailUrls[index] = value;
       nextImageCrops[index] = createDefaultImageCrop();
 
       return {
         ...current,
         saveStatus: "idle",
         feedbackMessage: undefined,
+        pendingImageDeletionUrls:
+          current.draft.imageUrls[index] !== value && isStoredProductImage(current.draft.imageUrls[index])
+            ? [...new Set([...current.pendingImageDeletionUrls, current.draft.imageUrls[index]])]
+            : current.pendingImageDeletionUrls,
         draft: {
           ...current.draft,
           imageUrls: nextImageUrls,
+          thumbnailUrls: nextThumbnailUrls,
           imageCrops: nextImageCrops,
         },
       };
@@ -297,7 +347,65 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     });
   }
 
-  function saveSelections() {
+  async function uploadDraftImage(index: 0 | 1 | 2, upload: AdministrationProductImageUpload) {
+    if (!productActions) {
+      return false;
+    }
+
+    setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
+    const result = await productActions.uploadImage.call(upload);
+    if (!result.ok) {
+      setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
+      return false;
+    }
+
+    setState((current) => {
+      const previousImageUrl = current.draft.imageUrls[index];
+      const imageUrls = [...current.draft.imageUrls] as [string, string, string];
+      const thumbnailUrls = [...current.draft.thumbnailUrls] as [string, string, string];
+      imageUrls[index] = result.data.detailUrl;
+      thumbnailUrls[index] = result.data.thumbnailUrl;
+      return {
+        ...current,
+        saveStatus: "idle",
+        feedbackMessage: undefined,
+        pendingImageDeletionUrls:
+          previousImageUrl && previousImageUrl !== result.data.detailUrl && isStoredProductImage(previousImageUrl)
+            ? [...new Set([...current.pendingImageDeletionUrls, previousImageUrl])]
+            : current.pendingImageDeletionUrls,
+        draft: { ...current.draft, imageUrls, thumbnailUrls },
+      };
+    });
+    return true;
+  }
+
+  function reportImageUploadFailure(message: string) {
+    setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: message }));
+  }
+
+  async function saveSelections() {
+    if (productActions) {
+      const product = createProductFromDraft(state.draft, state.selectedProductId);
+      const imageUrlsToDelete = state.pendingImageDeletionUrls;
+      setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
+      const result = await (state.editorMode === "create" ? productActions.create : productActions.update).call(product);
+
+      if (!result.ok) {
+        setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
+        return;
+      }
+
+      const deleteImagesResult = await productActions.deleteImages.call(imageUrlsToDelete);
+
+      setState((current) => {
+        const nextProducts = current.editorMode === "create"
+          ? [result.data, ...current.products]
+          : current.products.map((item) => (item.id === result.data.id ? result.data : item));
+        return { ...current, products: nextProducts, currentPage: current.editorMode === "create" ? 1 : current.currentPage, selectedProductId: result.data.id, editorMode: "edit", saveStatus: deleteImagesResult.ok ? "saved" : "failure", feedbackMessage: deleteImagesResult.ok ? (current.editorMode === "create" ? "Produto criado com sucesso." : "Produto atualizado com sucesso.") : deleteImagesResult.failure.message, pendingImageDeletionUrls: deleteImagesResult.ok ? [] : current.pendingImageDeletionUrls };
+      });
+      return;
+    }
+
     setState((current) => {
       const nextProduct = createProductFromDraft(current.draft, current.selectedProductId);
       const nextProducts =
@@ -320,7 +428,22 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     });
   }
 
-  function deleteSelectedProduct() {
+  async function deleteSelectedProduct() {
+    if (productActions && state.selectedProductId) {
+      const selectedProductImages = state.products.find((product) => product.id === state.selectedProductId)?.imageUrls ?? [];
+      setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
+      const result = await productActions.delete.call(state.selectedProductId);
+      if (!result.ok) {
+        setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
+        return;
+      }
+      const deleteImagesResult = await productActions.deleteImages.call(selectedProductImages);
+      if (!deleteImagesResult.ok) {
+        setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: deleteImagesResult.failure.message }));
+        return;
+      }
+    }
+
     setState((current) => {
       if (!current.selectedProductId) {
         return current;
@@ -355,6 +478,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     selectedProduct,
     actions: {
       updateQuery,
+      dismissFeedback,
       setCurrentPage,
       openExistingProduct,
       openNewProductDrawer,
@@ -366,6 +490,8 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       toggleDraftActive,
       toggleDraftListField,
       updateDraftImage,
+      uploadDraftImage,
+      reportImageUploadFailure,
       updateDraftImageCrop,
       saveSelections,
       deleteSelectedProduct,

@@ -51,7 +51,9 @@ export function AdministrationProductsTable({
                 <td className="border-t border-[#ededed] px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="relative size-[42px] overflow-hidden bg-[#ececec]">
-                      <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" />
+                      {product.imageUrls[0] ? (
+                        <Image src={product.imageUrls[0]} alt={product.name} fill sizes="42px" className="object-cover" />
+                      ) : null}
                     </div>
                     <div>
                       <strong className="block font-black text-[var(--color-foreground)]" style={{ fontSize: administrationTypography.tableItem }}>{product.name}</strong>

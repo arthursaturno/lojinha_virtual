@@ -19,13 +19,15 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
         className="relative overflow-hidden bg-[#eee]"
         style={{ aspectRatio: catalogProductImageAspectRatio }}
       >
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover transition-transform duration-200 hover:scale-[1.025]"
-        />
+        {product.images[0] ? (
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="object-cover transition-transform duration-200 hover:scale-[1.025]"
+          />
+        ) : null}
         {product.badge ? (
           <span className="absolute bottom-[5px] left-[5px] bg-[var(--color-lime)] px-[5px] py-[3px] font-black" style={{ fontSize: catalogTypography.listingItem }}>
             {product.badge}

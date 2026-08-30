@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
+import type { StoreFilterOptions } from "@/core/store-filters/store-filter-options";
 import { CatalogFilters } from "@/features/catalog/presentation/components/catalog-filters";
 import { CatalogHeader } from "@/features/catalog/presentation/components/catalog-header";
 import { CatalogHero } from "@/features/catalog/presentation/components/catalog-hero";
@@ -16,10 +17,11 @@ type CatalogExperienceProps = {
   products: CatalogProduct[];
   storeName: string;
   whatsappPhone: string;
+  configuredFilters?: StoreFilterOptions;
 };
 
-export function CatalogExperience({ products, storeName, whatsappPhone }: CatalogExperienceProps) {
-  const viewModel = useCatalogViewModel(products);
+export function CatalogExperience({ products, storeName, whatsappPhone, configuredFilters }: CatalogExperienceProps) {
+  const viewModel = useCatalogViewModel(products, configuredFilters);
   const { state, actions } = viewModel;
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -35,13 +37,10 @@ export function CatalogExperience({ products, storeName, whatsappPhone }: Catalo
       sizeFilters={viewModel.sizeFilters}
       colorFilters={viewModel.colorFilters}
       modelFilters={viewModel.modelFilters}
-      maxPrice={viewModel.maxPrice}
-      formattedMaxPrice={viewModel.formattedMaxPrice}
       onCategoryChange={actions.updateCategory}
       onSizeToggle={actions.toggleSizeFilter}
       onColorToggle={actions.toggleColorFilter}
       onModelToggle={actions.toggleModelFilter}
-      onMaxPriceChange={actions.updateMaxPrice}
       onClear={actions.clearFilters}
     />
   );

@@ -22,6 +22,8 @@ export type AdministrationProductDto = {
   color_label: string;
   base_price: number;
   image_urls: string[];
+  thumbnail_urls?: string[];
+  image_crops?: Array<{ zoom: number; offset_x: number; offset_y: number }>;
   badge?: string;
   is_active: boolean;
   total_stock_quantity: number;
@@ -51,6 +53,8 @@ export function administrationProductToDomain(dto: AdministrationProductDto): Ad
     colorLabel: dto.color_label,
     basePrice: dto.base_price,
     imageUrls: dto.image_urls,
+    thumbnailUrls: dto.thumbnail_urls,
+    imageCrops: dto.image_crops?.map((crop) => ({ zoom: crop.zoom, offsetX: crop.offset_x, offsetY: crop.offset_y })),
     badge: dto.badge,
     isActive: dto.is_active,
     totalStockQuantity: dto.total_stock_quantity,

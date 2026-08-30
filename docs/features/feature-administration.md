@@ -35,10 +35,10 @@ src/features/administration/
     viewmodels/
 ```
 
-## Fonte de dados atual
+## Fonte de dados
 
-Mock local em `data/datasources/administration-products-mock-datasource.ts`.
+Supabase em `data/datasources/administration-products-supabase-datasource.ts`.
 
 ## Proximo passo sugerido
 
-Substituir o mock por leitura e persistencia reais no Supabase, mantendo o mesmo fluxo de edicao em drawer.
+Execute `supabase/migrations/20260830160000_create_products.sql` no SQL Editor antes do primeiro cadastro. A vitrine consulta as mesmas tabelas e so recebe produtos ativos pelas policies RLS.

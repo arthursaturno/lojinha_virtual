@@ -12,6 +12,7 @@ export type CatalogProduct = {
   id: string;
   slug: string;
   name: string;
+  description?: string;
   category: string;
   color: string;
   price: number;

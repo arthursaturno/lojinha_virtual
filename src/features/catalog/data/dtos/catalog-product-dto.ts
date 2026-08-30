@@ -17,6 +17,7 @@ export type CatalogProductDto = {
   id: string;
   slug: string;
   name: string;
+  description?: string;
   category: string;
   color: string;
   price: number;
@@ -43,6 +44,7 @@ export function catalogProductToDomain(dto: CatalogProductDto): CatalogProduct {
     id: dto.id,
     slug: dto.slug,
     name: dto.name,
+    description: dto.description,
     category: dto.category,
     color: dto.color,
     price: dto.price,

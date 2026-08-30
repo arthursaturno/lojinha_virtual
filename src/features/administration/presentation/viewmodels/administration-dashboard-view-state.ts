@@ -1,7 +1,7 @@
 import type { AdministrationProduct } from "@/features/administration/domain/entities/administration-product";
 
 export type AdministrationDashboardStatus = "initial" | "loading" | "success" | "failure";
-export type AdministrationSaveStatus = "idle" | "saved";
+export type AdministrationSaveStatus = "idle" | "loading" | "saved" | "failure";
 export type AdministrationEditorMode = "create" | "edit";
 export const administrationProductsPerPage = 10;
 
@@ -73,6 +73,7 @@ export type AdministrationProductDraft = {
   colors: string[];
   models: string[];
   imageUrls: [string, string, string];
+  thumbnailUrls: [string, string, string];
   imageCrops: [
     AdministrationImageCrop,
     AdministrationImageCrop,
@@ -90,6 +91,7 @@ export type AdministrationDashboardViewState = {
   saveStatus: AdministrationSaveStatus;
   draft: AdministrationProductDraft;
   products: AdministrationProduct[];
+  pendingImageDeletionUrls: string[];
   errorMessage?: string;
   feedbackMessage?: string;
 };
@@ -105,6 +107,7 @@ export const emptyAdministrationProductDraft: AdministrationProductDraft = {
   colors: [],
   models: [],
   imageUrls: ["", "", ""],
+  thumbnailUrls: ["", "", ""],
   imageCrops: [
     { zoom: 1, offsetX: 0, offsetY: 0 },
     { zoom: 1, offsetX: 0, offsetY: 0 },
@@ -122,4 +125,5 @@ export const initialAdministrationDashboardViewState: AdministrationDashboardVie
   saveStatus: "idle",
   draft: emptyAdministrationProductDraft,
   products: [],
+  pendingImageDeletionUrls: [],
 };

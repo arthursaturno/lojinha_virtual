@@ -1,5 +1,5 @@
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
-import { createAdministrationProductsUseCase } from "@/core/di/administration";
+import { createAdministrationProductsUseCaseWithClient } from "@/core/di/administration";
 import { createGetStoreSettingsUseCaseWithClient } from "@/core/di/store-settings";
 import { createSupabaseServerClient } from "@/core/network/supabase/server-client";
 import { AdministrationExperience } from "@/features/administration/presentation/pages/administration-experience";
@@ -12,7 +12,7 @@ type AdministrationPageProps = {
 export async function AdministrationPage({ adminEmail, supabaseConfig }: AdministrationPageProps) {
   const supabaseClient = await createSupabaseServerClient();
   const [productsResult, storeSettingsResult] = await Promise.all([
-    createAdministrationProductsUseCase().call(),
+    createAdministrationProductsUseCaseWithClient(supabaseClient).call(),
     createGetStoreSettingsUseCaseWithClient(supabaseClient).call(),
   ]);
 
