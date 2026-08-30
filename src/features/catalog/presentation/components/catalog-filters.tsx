@@ -1,6 +1,7 @@
 "use client";
 
 import { FilterCheckbox } from "@/features/catalog/presentation/components/filter-checkbox";
+import { catalogTypography } from "@/core/theme/tokens";
 
 type CatalogFiltersProps = {
   className?: string;
@@ -52,14 +53,14 @@ export function CatalogFilters({
 }: CatalogFiltersProps) {
   return (
     <aside className={`border-r border-[var(--color-border)] px-6 py-[19px] ${className}`}>
-      <div className="flex justify-between text-[9px]">
+      <div className="flex justify-between" style={{ fontSize: catalogTypography.filterItem }}>
         <strong>FILTRAR</strong>
         <button className="text-[#777]" onClick={onClear}>
           LIMPAR
         </button>
       </div>
 
-      <h4 className="mb-[11px] mt-6 text-[9px] font-black">CATEGORIA</h4>
+      <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>CATEGORIA</h4>
       {categories
         .filter((category) => category !== "Todos")
         .map((category) => (
@@ -71,24 +72,25 @@ export function CatalogFilters({
           />
         ))}
 
-      <h4 className="mb-[11px] mt-6 text-[9px] font-black">TAMANHO</h4>
+      <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>TAMANHO</h4>
       <div className="flex flex-wrap gap-[5px]">
         {sizes.map((size) => (
           <button
             key={size}
             onClick={() => onSizeToggle(size)}
-            className={`border px-2 py-[6px] text-[10px] ${
+            className={`border px-2 py-[6px] ${
               sizeFilters.includes(size)
                 ? "border-[var(--color-lime)] bg-black text-[var(--color-lime)]"
                 : "border-[#d7d7d7] bg-white"
             }`}
+            style={{ fontSize: catalogTypography.filterItem }}
           >
             {size}
           </button>
         ))}
       </div>
 
-      <h4 className="mb-[11px] mt-6 text-[9px] font-black">COR</h4>
+      <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>COR</h4>
       <div className="flex gap-[7px]">
         {colors.map((color) => (
           <button
@@ -102,7 +104,7 @@ export function CatalogFilters({
         ))}
       </div>
 
-      <h4 className="mb-[11px] mt-6 text-[9px] font-black">MODELO</h4>
+      <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>MODELO</h4>
       {models.map((model) => (
         <FilterCheckbox
           key={model}
@@ -112,7 +114,7 @@ export function CatalogFilters({
         />
       ))}
 
-      <h4 className="mb-[11px] mt-6 text-[9px] font-black">PRECO</h4>
+      <h4 className="mb-[11px] mt-6 font-black" style={{ fontSize: catalogTypography.filterItem }}>PRECO</h4>
       <input
         min="150"
         max="450"
@@ -122,7 +124,7 @@ export function CatalogFilters({
         onChange={(event) => onMaxPriceChange(Number(event.target.value))}
         className="w-full accent-[var(--color-lime)]"
       />
-      <p className="mt-2 text-[10px] text-[#666]">Ate {formattedMaxPrice}</p>
+      <p className="mt-2 text-[#666]" style={{ fontSize: catalogTypography.filterItem }}>Ate {formattedMaxPrice}</p>
     </aside>
   );
 }

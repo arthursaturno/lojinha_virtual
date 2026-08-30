@@ -1,6 +1,7 @@
 "use client";
 
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
+import { catalogTypography } from "@/core/theme/tokens";
 import { ProductCard } from "@/features/catalog/presentation/components/product-card";
 import type { CatalogSortOption } from "@/features/catalog/presentation/viewmodels/catalog-view-state";
 
@@ -32,7 +33,7 @@ export function CatalogProductGrid({
 
   return (
     <section className="px-3 pb-[90px] md:px-[22px] md:pb-10">
-      <div className="flex h-[50px] items-center justify-between text-[10px] md:h-[51px]">
+      <div className="flex h-[50px] items-center justify-between md:h-[51px]" style={{ fontSize: catalogTypography.listingItem }}>
         <strong>
           {totalProducts} produtos encontrados
           {totalProducts > 0 ? ` (${firstItem}-${lastItem})` : ""}
@@ -40,7 +41,8 @@ export function CatalogProductGrid({
         <select
           value={sort}
           onChange={(event) => onSortChange(event.target.value as CatalogSortOption)}
-          className="border border-[#ddd] bg-white p-2 text-[10px]"
+          className="border border-[#ddd] bg-white p-2"
+          style={{ fontSize: catalogTypography.listingItem }}
         >
           <option value="recent">Mais recentes</option>
           <option value="lowest-price">Menor preco</option>
@@ -59,7 +61,7 @@ export function CatalogProductGrid({
       )}
 
       {totalPages > 1 ? (
-        <div className="mt-7 flex items-center justify-center gap-2 text-[10px] font-black">
+        <div className="mt-7 flex items-center justify-center gap-2 font-black" style={{ fontSize: catalogTypography.listingItem }}>
           <button
             className="h-9 border border-[#d7d7d7] px-3 disabled:text-[#aaa]"
             disabled={currentPage <= 1}

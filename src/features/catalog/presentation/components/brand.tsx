@@ -1,12 +1,13 @@
-export function Brand() {
+type BrandProps = {
+  storeName: string;
+};
+
+export function Brand({ storeName }: BrandProps) {
   return (
-    <div className="flex flex-col leading-[0.78]">
-      <strong className="text-[23px] font-black italic tracking-[-0.08em] text-white md:text-[28px]">
-        EZZION
+    <div className="max-w-[150px]">
+      <strong className="block break-words text-[23px] font-black italic leading-none tracking-[-0.08em] text-white md:text-[28px]">
+        {storeName}
       </strong>
-      <span className="ml-[42px] text-[12px] font-black text-[var(--color-lime)] md:ml-[54px]">
-        IMPORTS
-      </span>
     </div>
   );
 }

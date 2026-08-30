@@ -5,10 +5,8 @@ export const colors = {
   border: "#dedede",
   mutedText: "#666666",
   stock: "#28a337",
-};
-
-export const storeConfig = {
-  whatsappPhone: "5581999999999",
+  success: "#157a2c",
+  error: "#b42318",
 };
 
 export const administrationLayout = {
@@ -34,4 +32,10 @@ export const administrationTypography = {
   email: "clamp(0.8125rem, 0.78rem + 0.18vw, 0.875rem)",
   sidebarBrand: "clamp(1.75rem, 1.68rem + 0.3vw, 1.9rem)",
   sidebarSubBrand: "clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem)",
+};
+
+export const catalogTypography = {
+  purchaseDrawerItem: "0.875rem",
+  filterItem: "0.8125rem",
+  listingItem: "0.8125rem",
 };

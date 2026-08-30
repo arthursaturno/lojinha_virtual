@@ -1,5 +1,6 @@
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
-import { createGetStoreSettingsUseCase } from "@/core/di/store-settings";
+import { createGetStoreSettingsUseCaseWithClient } from "@/core/di/store-settings";
+import { createSupabaseServerClient } from "@/core/network/supabase/server-client";
 import { StoreSettingsExperience } from "@/features/store-settings/presentation/pages/store-settings-experience";
 
 type StoreSettingsPageProps = {
@@ -8,7 +9,7 @@ type StoreSettingsPageProps = {
 };
 
 export async function StoreSettingsPage({ adminEmail, supabaseConfig }: StoreSettingsPageProps) {
-  const result = await createGetStoreSettingsUseCase().call();
+  const result = await createGetStoreSettingsUseCaseWithClient(await createSupabaseServerClient()).call();
 
   if (!result.ok) {
     return <main className="grid min-h-screen place-items-center bg-white px-6 text-center"><p className="text-sm font-semibold">{result.failure.message}</p></main>;

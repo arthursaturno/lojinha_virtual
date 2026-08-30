@@ -3,4 +3,5 @@ import type { StoreSettings } from "@/features/store-settings/domain/entities/st
 
 export interface StoreSettingsRepository {
   get(): Promise<Result<StoreSettings>>;
+  update(settings: StoreSettings): Promise<Result<StoreSettings>>;
 }

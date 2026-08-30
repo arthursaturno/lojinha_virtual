@@ -1,11 +1,12 @@
 "use client";
 
 import { FiSearch } from "react-icons/fi";
-import { storeConfig } from "@/core/theme/tokens";
 import { Brand } from "@/features/catalog/presentation/components/brand";
 import { WhatsAppLabel } from "@/features/catalog/presentation/components/whatsapp-label";
 
 type CatalogHeaderProps = {
+  storeName: string;
+  whatsappPhone: string;
   query: string;
   categories: string[];
   activeCategory: string;
@@ -14,6 +15,8 @@ type CatalogHeaderProps = {
 };
 
 export function CatalogHeader({
+  storeName,
+  whatsappPhone,
   query,
   categories,
   activeCategory,
@@ -28,7 +31,7 @@ export function CatalogHeader({
       </div>
 
       <header className="grid min-h-[116px] grid-cols-[1fr_auto] items-center gap-[9px] border-t border-[#1e1e1e] bg-[var(--color-foreground)] px-[14px] py-[11px] text-white md:h-[79px] md:min-h-0 md:grid-cols-[150px_minmax(280px,510px)_180px] md:gap-[22px] md:px-[28px] md:py-0">
-        <Brand />
+        <Brand storeName={storeName} />
 
         <label className="col-span-2 flex h-10 items-center border border-[#333] bg-[#151515] px-[14px] md:col-span-1">
           <input
@@ -43,7 +46,7 @@ export function CatalogHeader({
         <div className="hidden items-center gap-2 md:flex">
           <button
             className="topbar-whatsapp"
-            onClick={() => window.open(`https://wa.me/${storeConfig.whatsappPhone}`, "_blank", "noopener,noreferrer")}
+            onClick={() => window.open(`https://wa.me/${whatsappPhone}`, "_blank", "noopener,noreferrer")}
           >
             <WhatsAppLabel>FALAR NO WHATSAPP</WhatsAppLabel>
           </button>

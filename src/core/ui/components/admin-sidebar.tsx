@@ -11,6 +11,7 @@ import { AdminSignOutButton } from "@/core/ui/components/admin-sign-out-button";
 export type AdminSidebarSection = "products" | "settings";
 
 type AdminSidebarProps = {
+  storeName: string;
   adminEmail: string;
   supabaseConfig: AdminAuthenticationBrowserConfig;
   activeSection: AdminSidebarSection;
@@ -20,6 +21,7 @@ type AdminSidebarProps = {
 };
 
 type SidebarContentProps = {
+  storeName: string;
   adminEmail: string;
   supabaseConfig: AdminAuthenticationBrowserConfig;
   activeSection: AdminSidebarSection;
@@ -42,6 +44,7 @@ const navigationItems = [
 ] as const;
 
 function SidebarContent({
+  storeName,
   adminEmail,
   supabaseConfig,
   activeSection,
@@ -50,19 +53,13 @@ function SidebarContent({
   return (
     <>
       {hideBrand ? null : (
-        <div className="flex flex-col leading-[0.78]">
+        <div className="max-w-full">
           <strong
-            className="font-display font-normal tracking-normal text-white"
+            className="block break-words font-display font-normal leading-none tracking-normal text-white"
             style={{ fontSize: administrationTypography.sidebarBrand }}
           >
-            EZZION
+            {storeName}
           </strong>
-          <span
-            className="ml-[54px] font-black text-[var(--color-lime)]"
-            style={{ fontSize: administrationTypography.sidebarSubBrand }}
-          >
-            IMPORTS
-          </span>
         </div>
       )}
 
@@ -112,6 +109,7 @@ function SidebarContent({
 }
 
 export function AdminSidebar({
+  storeName,
   adminEmail,
   supabaseConfig,
   activeSection,
@@ -132,19 +130,13 @@ export function AdminSidebar({
         >
           <FiMenu aria-hidden="true" className="text-lg" />
         </button>
-        <div className="text-center">
+        <div className="max-w-[180px] text-center">
           <strong
-            className="font-display block font-normal leading-none tracking-normal"
+            className="font-display block break-words font-normal leading-none tracking-normal"
             style={{ fontSize: administrationTypography.sidebarBrand }}
           >
-            EZZION
+            {storeName}
           </strong>
-          <span
-            className="block font-black text-[var(--color-lime)]"
-            style={{ fontSize: administrationTypography.sidebarSubBrand }}
-          >
-            IMPORTS
-          </span>
         </div>
         <Link
           className="grid size-9 place-items-center text-[var(--color-lime)]"
@@ -160,6 +152,7 @@ export function AdminSidebar({
         style={{ width: administrationLayout.sidebarDesktopWidth }}
       >
         <SidebarContent
+          storeName={storeName}
           adminEmail={adminEmail}
           supabaseConfig={supabaseConfig}
           activeSection={activeSection}
@@ -192,6 +185,7 @@ export function AdminSidebar({
               </button>
             </div>
             <SidebarContent
+              storeName={storeName}
               adminEmail={adminEmail}
               supabaseConfig={supabaseConfig}
               activeSection={activeSection}

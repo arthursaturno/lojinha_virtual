@@ -9,7 +9,7 @@ const settings: StoreSettings = { storeName: "Ezzion Imports", whatsappPhone: "5
 
 describe("GetStoreSettingsUseCase", () => {
   it("returns the settings from repository", async () => {
-    const repository: StoreSettingsRepository = { get: vi.fn().mockResolvedValue(Result.success(settings)) };
+    const repository: StoreSettingsRepository = { get: vi.fn().mockResolvedValue(Result.success(settings)), update: vi.fn() };
     const result = await new GetStoreSettingsUseCase(repository).call();
 
     expect(result).toEqual(Result.success(settings));
@@ -18,7 +18,7 @@ describe("GetStoreSettingsUseCase", () => {
 
   it("returns repository failure", async () => {
     const failure = Result.failure<StoreSettings>({ type: "unknown", message: "Falhou" });
-    const repository: StoreSettingsRepository = { get: vi.fn().mockResolvedValue(failure) };
+    const repository: StoreSettingsRepository = { get: vi.fn().mockResolvedValue(failure), update: vi.fn() };
 
     await expect(new GetStoreSettingsUseCase(repository).call()).resolves.toEqual(failure);
   });

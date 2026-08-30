@@ -6,7 +6,7 @@ type FilterCheckboxProps = {
 
 export function FilterCheckbox({ label, checked, onChange }: FilterCheckboxProps) {
   return (
-    <label className="my-2 flex cursor-pointer items-center gap-[7px] text-[10px]">
+    <label className="my-2 flex cursor-pointer items-center gap-[7px]" style={{ fontSize: catalogTypography.filterItem }}>
       <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
       <span
         className={`grid size-3 place-items-center border text-[9px] leading-none ${
@@ -21,3 +21,4 @@ export function FilterCheckbox({ label, checked, onChange }: FilterCheckboxProps
     </label>
   );
 }
+import { catalogTypography } from "@/core/theme/tokens";

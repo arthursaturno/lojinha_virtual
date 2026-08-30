@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 
-import { storeConfig } from "@/core/theme/tokens";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import { CatalogFilters } from "@/features/catalog/presentation/components/catalog-filters";
 import { CatalogHeader } from "@/features/catalog/presentation/components/catalog-header";
@@ -15,9 +14,11 @@ import { useCatalogViewModel } from "@/features/catalog/presentation/viewmodels/
 
 type CatalogExperienceProps = {
   products: CatalogProduct[];
+  storeName: string;
+  whatsappPhone: string;
 };
 
-export function CatalogExperience({ products }: CatalogExperienceProps) {
+export function CatalogExperience({ products, storeName, whatsappPhone }: CatalogExperienceProps) {
   const viewModel = useCatalogViewModel(products);
   const { state, actions } = viewModel;
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -48,6 +49,8 @@ export function CatalogExperience({ products }: CatalogExperienceProps) {
   return (
     <div className="min-h-screen bg-white pt-12 text-[var(--color-foreground)] md:pt-0">
       <CatalogHeader
+        storeName={storeName}
+        whatsappPhone={whatsappPhone}
         query={state.query}
         categories={viewModel.categories}
         activeCategory={state.category}
@@ -85,6 +88,7 @@ export function CatalogExperience({ products }: CatalogExperienceProps) {
 
       {state.selectedProduct ? (
         <ProductDrawer
+          whatsappPhone={whatsappPhone}
           product={state.selectedProduct}
           selection={state.selection}
           selectedVariant={viewModel.selectedVariant}
@@ -116,7 +120,7 @@ export function CatalogExperience({ products }: CatalogExperienceProps) {
 
       <button
         className="floating-whatsapp fixed bottom-5 right-4 z-30 flex size-14 items-center justify-center rounded-full bg-[var(--color-lime)] text-black shadow-[0_8px_20px_rgba(0,0,0,.22)] md:hidden"
-        onClick={() => window.open(`https://wa.me/${storeConfig.whatsappPhone}`, "_blank", "noopener,noreferrer")}
+        onClick={() => window.open(`https://wa.me/${whatsappPhone}`, "_blank", "noopener,noreferrer")}
         aria-label="Falar no WhatsApp"
       >
         <WhatsAppLabel>

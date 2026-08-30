@@ -27,8 +27,8 @@ export function StoreSettingsForm({ settings, saveStatus, onFieldChange, onSave 
       </section>
 
       <div className="flex justify-end">
-        <button type="button" className="h-11 bg-[var(--color-lime)] px-5 font-black text-black" style={{ fontSize: administrationTypography.action }} onClick={onSave}>
-          {saveStatus === "saved" ? "SALVO OK" : "SALVAR CONFIGURACOES"}
+        <button type="button" className="h-11 bg-[var(--color-lime)] px-5 font-black text-black disabled:opacity-70" style={{ fontSize: administrationTypography.action }} onClick={onSave} disabled={saveStatus === "loading"}>
+          {saveStatus === "loading" ? "SALVANDO..." : "SALVAR CONFIGURACOES"}
         </button>
       </div>
     </div>

@@ -15,12 +15,14 @@ import { useAdministrationDashboardViewModel } from "@/features/administration/p
 
 type AdministrationExperienceProps = {
   products: AdministrationProduct[];
+  storeName: string;
   adminEmail: string;
   supabaseConfig: AdminAuthenticationBrowserConfig;
 };
 
 export function AdministrationExperience({
   products,
+  storeName,
   adminEmail,
   supabaseConfig,
 }: AdministrationExperienceProps) {
@@ -34,6 +36,7 @@ export function AdministrationExperience({
       style={{ gridTemplateColumns: `minmax(${administrationLayout.sidebarDesktopWidth}, ${administrationLayout.sidebarDesktopWidth}) minmax(0, 1fr)` }}
     >
       <AdminSidebar
+        storeName={storeName}
         adminEmail={adminEmail}
         supabaseConfig={supabaseConfig}
         activeSection="products"

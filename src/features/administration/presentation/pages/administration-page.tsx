@@ -1,5 +1,7 @@
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
 import { createAdministrationProductsUseCase } from "@/core/di/administration";
+import { createGetStoreSettingsUseCaseWithClient } from "@/core/di/store-settings";
+import { createSupabaseServerClient } from "@/core/network/supabase/server-client";
 import { AdministrationExperience } from "@/features/administration/presentation/pages/administration-experience";
 
 type AdministrationPageProps = {
@@ -8,15 +10,27 @@ type AdministrationPageProps = {
 };
 
 export async function AdministrationPage({ adminEmail, supabaseConfig }: AdministrationPageProps) {
-  const result = await createAdministrationProductsUseCase().call();
+  const supabaseClient = await createSupabaseServerClient();
+  const [productsResult, storeSettingsResult] = await Promise.all([
+    createAdministrationProductsUseCase().call(),
+    createGetStoreSettingsUseCaseWithClient(supabaseClient).call(),
+  ]);
 
-  if (!result.ok) {
+  if (!productsResult.ok) {
     return (
       <main className="grid min-h-screen place-items-center bg-white px-6 text-center">
-        <p className="text-sm font-semibold">{result.failure.message}</p>
+        <p className="text-sm font-semibold">{productsResult.failure.message}</p>
       </main>
     );
   }
 
-  return <AdministrationExperience products={result.data} adminEmail={adminEmail} supabaseConfig={supabaseConfig} />;
+  if (!storeSettingsResult.ok) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-white px-6 text-center">
+        <p className="text-sm font-semibold">{storeSettingsResult.failure.message}</p>
+      </main>
+    );
+  }
+
+  return <AdministrationExperience products={productsResult.data} storeName={storeSettingsResult.data.storeName} adminEmail={adminEmail} supabaseConfig={supabaseConfig} />;
 }

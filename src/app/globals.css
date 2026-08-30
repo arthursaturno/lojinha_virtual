@@ -12,6 +12,8 @@
   --color-border: #dedede;
   --color-muted: #666666;
   --color-stock: #28a337;
+  --color-success: #157a2c;
+  --color-error: #b42318;
 }
 
 html,

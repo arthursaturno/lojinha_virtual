@@ -3,6 +3,7 @@
 import Image from "next/image";
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
+import { catalogTypography } from "@/core/theme/tokens";
 import { formatCurrency } from "@/core/utils/format/currency";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 
@@ -26,16 +27,16 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           className="object-cover transition-transform duration-200 hover:scale-[1.025]"
         />
         {product.badge ? (
-          <span className="absolute bottom-[5px] left-[5px] bg-[var(--color-lime)] px-[5px] py-[3px] text-[8px] font-black">
+          <span className="absolute bottom-[5px] left-[5px] bg-[var(--color-lime)] px-[5px] py-[3px] font-black" style={{ fontSize: catalogTypography.listingItem }}>
             {product.badge}
           </span>
         ) : null}
       </div>
       <div>
-        <h3 className="mb-1 mt-[9px] text-[11px] font-bold">{product.name}</h3>
-        <p className="mb-[7px] text-[10px] text-[var(--color-muted)]">{product.color}</p>
-        <strong className="text-[11px]">{formatCurrency(product.price)}</strong>
-        <small className="mt-[7px] block text-[8px] font-extrabold text-[var(--color-stock)]">EM ESTOQUE</small>
+        <h3 className="mb-1 mt-[9px] font-bold" style={{ fontSize: catalogTypography.listingItem }}>{product.name}</h3>
+        <p className="mb-[7px] text-[var(--color-muted)]" style={{ fontSize: catalogTypography.listingItem }}>{product.color}</p>
+        <strong style={{ fontSize: catalogTypography.listingItem }}>{formatCurrency(product.price)}</strong>
+        <small className="mt-[7px] block font-extrabold text-[var(--color-stock)]" style={{ fontSize: catalogTypography.listingItem }}>EM ESTOQUE</small>
       </div>
     </button>
   );

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { FiChevronLeft, FiChevronRight, FiHeadphones, FiMaximize2, FiTruck, FiX } from "react-icons/fi";
 
-import { storeConfig } from "@/core/theme/tokens";
+import { catalogTypography } from "@/core/theme/tokens";
 import { formatCurrency } from "@/core/utils/format/currency";
 import type {
   CatalogProduct,
@@ -16,6 +16,7 @@ import { WhatsAppLabel } from "@/features/catalog/presentation/components/whatsa
 import type { ProductSelection } from "@/features/catalog/presentation/viewmodels/catalog-view-state";
 
 type ProductDrawerProps = {
+  whatsappPhone: string;
   product: CatalogProduct;
   selection: ProductSelection;
   selectedVariant: ProductVariant | null;
@@ -28,6 +29,7 @@ type ProductDrawerProps = {
 };
 
 export function ProductDrawer({
+  whatsappPhone,
   product,
   selection,
   selectedVariant,
@@ -72,7 +74,7 @@ export function ProductDrawer({
     ].join("\n");
 
     window.open(
-      `https://wa.me/${storeConfig.whatsappPhone}?text=${encodeURIComponent(message)}`,
+      `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`,
       "_blank",
       "noopener,noreferrer",
     );
@@ -92,7 +94,7 @@ export function ProductDrawer({
 
         <div className="relative mt-[10px] h-[270px] bg-[#eee]">
           <Image src={currentImage} alt={product.name} fill sizes="420px" className="object-cover" />
-          <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 text-[9px] font-extrabold text-white">
+          <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 font-extrabold text-white" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
             {imageIndex + 1}/{product.images.length}
           </div>
           <button
@@ -139,21 +141,21 @@ export function ProductDrawer({
           ))}
         </div>
 
-        <span className="mt-[10px] inline-block bg-[var(--color-lime)] px-[5px] py-[3px] text-[8px] font-black">
+        <span className="mt-[10px] inline-block bg-[var(--color-lime)] px-[5px] py-[3px] font-black" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
           {product.badge ?? "NOVO"}
         </span>
         <h2 className="my-2 text-xl font-extrabold">{product.name}</h2>
         <div className="text-2xl font-black">{formatCurrency(activePrice)}</div>
-        <p className="text-[11px] leading-normal text-[#555]">
+        <p className="leading-normal text-[#555]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
           a vista no PIX ou ate <b>6x de {formatCurrency(activePrice / 6)}</b> sem juros
         </p>
         <div className="mt-3 flex items-center justify-between bg-[#f7f7f5] px-3 py-3">
-          <span className="text-[10px] font-black">TOTAL ({selection.quantity} PECAS)</span>
+          <span className="font-black" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>TOTAL ({selection.quantity} PECAS)</span>
           <strong className="text-lg font-black">{formattedOrderTotal}</strong>
         </div>
 
         <div className="my-[18px] h-px bg-[#ddd]" />
-        <h4 className="text-[11px] font-black">ESCOLHA AS VARIACOES</h4>
+        <h4 className="font-black" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>ESCOLHA AS VARIACOES</h4>
 
         <OptionGroup label="TAMANHO" values={sizes} selected={selection.size} onSelect={(size) => onSelectionChange({ size })} />
         <OptionGroup label="COR" values={colors} selected={selection.color} onSelect={(color) => onSelectionChange({ color })} />
@@ -162,8 +164,8 @@ export function ProductDrawer({
         <div className="my-[18px] border-y border-[#eee] py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-[11px] font-black">QUANTIDADE</h4>
-              <p className="mt-1 text-[10px] text-[#777]">Disponivel: {availableQuantity} pecas</p>
+              <h4 className="font-black" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>QUANTIDADE</h4>
+              <p className="mt-1 text-[#777]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>Disponivel: {availableQuantity} pecas</p>
             </div>
             <div className="flex h-10 items-center border border-[#d7d7d7]">
               <button
@@ -181,7 +183,8 @@ export function ProductDrawer({
                 max={availableQuantity}
                 value={selection.quantity}
                 onChange={(event) => onQuantityChange(Number(event.target.value))}
-                className="h-full w-12 border-x border-[#d7d7d7] text-center text-sm font-extrabold outline-none"
+                className="h-full w-12 border-x border-[#d7d7d7] text-center font-extrabold outline-none"
+                style={{ fontSize: catalogTypography.purchaseDrawerItem }}
                 aria-label="Quantidade de pecas"
               />
               <button
@@ -197,7 +200,7 @@ export function ProductDrawer({
           </div>
         </div>
 
-        <p className="my-[22px] text-[10px] text-[var(--color-stock)]">
+        <p className="my-[22px] text-[var(--color-stock)]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
           ● {selectedVariant?.stockQuantity === 0 ? "Sem estoque" : "Em estoque"}
           <span className="ml-[22px] text-[#777]">Envio imediato</span>
         </p>
@@ -205,14 +208,15 @@ export function ProductDrawer({
         <button
           disabled={!isSelectionReady}
           onClick={contactSeller}
-          className="flex w-full items-center justify-center gap-[9px] bg-[var(--color-lime)] p-[14px] text-sm font-black disabled:bg-[#e9e9e9] disabled:text-[#999]"
+          className="flex w-full items-center justify-center gap-[9px] bg-[var(--color-lime)] p-[14px] font-black disabled:bg-[#e9e9e9] disabled:text-[#999]"
+          style={{ fontSize: catalogTypography.purchaseDrawerItem }}
         >
           <WhatsAppLabel>{isSelectionReady ? "FALAR NO WHATSAPP" : "SELECIONE AS VARIACOES"}</WhatsAppLabel>
         </button>
 
-        <small className="mt-[10px] block text-center text-[9px] text-[#777]">Tire duvidas e garanta o seu.</small>
+        <small className="mt-[10px] block text-center text-[#777]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>Tire duvidas e garanta o seu.</small>
 
-        <div className="mt-[18px] grid grid-cols-3 border-t border-[#eee] pb-[50px] pt-4 text-center text-[8px] leading-tight">
+        <div className="mt-[18px] grid grid-cols-3 border-t border-[#eee] pb-[50px] pt-4 text-center leading-tight" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
           <TrustItem icon={<FiTruck aria-hidden="true" />} label="Envio para todo o Brasil" />
           <TrustItem icon={<FiHeadphones aria-hidden="true" />} label="Atendimento rapido via WhatsApp" />
         </div>
