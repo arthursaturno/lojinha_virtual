@@ -1,6 +1,6 @@
 "use client";
 
-import { FiFilter, FiSearch } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 
 type AdministrationSearchBarProps = {
   query: string;
@@ -19,10 +19,7 @@ export function AdministrationSearchBar({ query, onQueryChange }: Administration
           placeholder="Buscar produto..."
         />
       </label>
-      <button className="flex h-12 w-full items-center justify-center gap-2 border border-[var(--color-border)] bg-white px-5 text-[11px] font-black text-[var(--color-foreground)] md:w-auto">
-        <FiFilter aria-hidden="true" className="text-base" />
-        <span>FILTROS</span>
-      </button>
+     
     </div>
   );
 }

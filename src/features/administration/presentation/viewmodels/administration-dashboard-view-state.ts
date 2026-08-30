@@ -3,6 +3,7 @@ import type { AdministrationProduct } from "@/features/administration/domain/ent
 export type AdministrationDashboardStatus = "initial" | "loading" | "success" | "failure";
 export type AdministrationSaveStatus = "idle" | "saved";
 export type AdministrationEditorMode = "create" | "edit";
+export const administrationProductsPerPage = 10;
 
 export const administrationCategoryOptions = [
   "Camisetas",
@@ -63,8 +64,10 @@ export type AdministrationImageCrop = {
 
 export type AdministrationProductDraft = {
   name: string;
+  description: string;
   category: string;
   basePrice: string;
+  isActive: boolean;
   totalStockQuantity: number;
   sizes: string[];
   colors: string[];
@@ -80,6 +83,7 @@ export type AdministrationProductDraft = {
 export type AdministrationDashboardViewState = {
   status: AdministrationDashboardStatus;
   query: string;
+  currentPage: number;
   selectedProductId: string | null;
   isProductDrawerOpen: boolean;
   editorMode: AdministrationEditorMode;
@@ -87,12 +91,15 @@ export type AdministrationDashboardViewState = {
   draft: AdministrationProductDraft;
   products: AdministrationProduct[];
   errorMessage?: string;
+  feedbackMessage?: string;
 };
 
 export const emptyAdministrationProductDraft: AdministrationProductDraft = {
   name: "",
+  description: "",
   category: "",
   basePrice: "",
+  isActive: true,
   totalStockQuantity: 0,
   sizes: [],
   colors: [],
@@ -108,6 +115,7 @@ export const emptyAdministrationProductDraft: AdministrationProductDraft = {
 export const initialAdministrationDashboardViewState: AdministrationDashboardViewState = {
   status: "initial",
   query: "",
+  currentPage: 1,
   selectedProductId: null,
   isProductDrawerOpen: false,
   editorMode: "edit",

@@ -17,11 +17,13 @@ export type AdministrationProductVariantDto = {
 export type AdministrationProductDto = {
   id: string;
   name: string;
+  description: string;
   category: string;
   color_label: string;
   base_price: number;
   image_urls: string[];
   badge?: string;
+  is_active: boolean;
   total_stock_quantity: number;
   variants: AdministrationProductVariantDto[];
 };
@@ -44,11 +46,13 @@ export function administrationProductToDomain(dto: AdministrationProductDto): Ad
   return {
     id: dto.id,
     name: dto.name,
+    description: dto.description,
     category: dto.category,
     colorLabel: dto.color_label,
     basePrice: dto.base_price,
     imageUrls: dto.image_urls,
     badge: dto.badge,
+    isActive: dto.is_active,
     totalStockQuantity: dto.total_stock_quantity,
     variants: dto.variants.map(administrationProductVariantToDomain),
   };

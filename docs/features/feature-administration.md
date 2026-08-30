@@ -8,11 +8,12 @@ Preparado para whitelabel: cada ambiente pode apontar para um Supabase diferente
 
 ## Escopo atual
 
-- Sidebar administrativa com secoes principais do painel.
+- Sidebar administrativa compartilhada em `core/ui/components`, com Produtos e Configuracoes.
 - Header com CTA de novo produto.
 - Busca local de produtos.
-- Tabela de produtos com abertura de drawer lateral ao clicar no item.
-- Drawer lateral com formulario guiado: categoria por selecao, preco com mascara PT-BR, estoque por stepper, tamanhos/cores/modelos por clique e ate 3 fotos via upload do aparelho, com recorte em popup separado e preview na mesma proporcao do card da vitrine.
+- Tabela paginada em blocos de 10 produtos, com hover e abertura de drawer lateral ao clicar no item.
+- Drawer lateral com formulario guiado: categoria por selecao, descricao, preco com mascara PT-BR, estoque por stepper, status ativo/pausado, tamanhos/cores/modelos por clique e ate 3 fotos via upload do aparelho, com recorte em popup separado e preview na mesma proporcao do card da vitrine.
+- Criacao, edicao e exclusao em memoria, para validar a experiencia antes do Supabase.
 - Logout administrativo.
 
 ## Estrutura

@@ -12,10 +12,12 @@ describe("GetAdministrationProductsUseCase", () => {
           {
             id: "1",
             name: "Produto Admin",
+            description: "Descricao de teste",
             category: "Camisetas",
             colorLabel: "Preto",
             basePrice: 199.9,
             imageUrls: ["/assets/camiseta-core.png", "", ""],
+            isActive: true,
             totalStockQuantity: 10,
             variants: [],
           },

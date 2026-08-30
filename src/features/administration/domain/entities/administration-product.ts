@@ -13,11 +13,13 @@ export type AdministrationProductVariant = {
 export type AdministrationProduct = {
   id: string;
   name: string;
+  description: string;
   category: string;
   colorLabel: string;
   basePrice: number;
   imageUrls: string[];
   badge?: string;
+  isActive: boolean;
   totalStockQuantity: number;
   variants: AdministrationProductVariant[];
 };

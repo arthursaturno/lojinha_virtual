@@ -28,6 +28,8 @@ export const administrationTypography = {
   helper: "clamp(0.75rem, 0.72rem + 0.18vw, 0.8125rem)",
   action: "clamp(0.8125rem, 0.78rem + 0.18vw, 0.875rem)",
   body: "clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem)",
+  tableItem: "0.875rem",
+  tableHeading: "0.75rem",
   caption: "clamp(0.8125rem, 0.78rem + 0.16vw, 0.875rem)",
   email: "clamp(0.8125rem, 0.78rem + 0.18vw, 0.875rem)",
   sidebarBrand: "clamp(1.75rem, 1.68rem + 0.3vw, 1.9rem)",

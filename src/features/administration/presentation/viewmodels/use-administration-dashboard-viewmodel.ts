@@ -7,10 +7,15 @@ import type { AdministrationProduct } from "@/features/administration/domain/ent
 import {
   emptyAdministrationProductDraft,
   initialAdministrationDashboardViewState,
-  type AdministrationImageCrop,
+  administrationProductsPerPage,
   type AdministrationDashboardViewState,
+  type AdministrationImageCrop,
   type AdministrationProductDraft,
 } from "@/features/administration/presentation/viewmodels/administration-dashboard-view-state";
+
+function createDefaultImageCrop(): AdministrationImageCrop {
+  return { zoom: 1, offsetX: 0, offsetY: 0 };
+}
 
 function createDraftFromProduct(product: AdministrationProduct | undefined): AdministrationProductDraft {
   const imageUrls = product?.imageUrls.slice(0, 3) ?? [];
@@ -20,18 +25,61 @@ function createDraftFromProduct(product: AdministrationProduct | undefined): Adm
 
   return {
     name: product?.name ?? "",
+    description: product?.description ?? "",
     category: product?.category ?? "",
     basePrice: product ? formatCurrencyInput(String(Math.round(product.basePrice * 100))) : "",
+    isActive: product?.isActive ?? true,
     totalStockQuantity: product?.totalStockQuantity ?? 0,
     sizes,
     colors,
     models,
     imageUrls: [imageUrls[0] ?? "", imageUrls[1] ?? "", imageUrls[2] ?? ""],
-    imageCrops: [
-      { zoom: 1, offsetX: 0, offsetY: 0 },
-      { zoom: 1, offsetX: 0, offsetY: 0 },
-      { zoom: 1, offsetX: 0, offsetY: 0 },
-    ],
+    imageCrops: [createDefaultImageCrop(), createDefaultImageCrop(), createDefaultImageCrop()],
+  };
+}
+
+function parseCurrencyInput(value: string): number {
+  const normalized = value.replace(/\./g, "").replace(",", ".");
+
+  return Number(normalized || "0");
+}
+
+function createProductFromDraft(
+  draft: AdministrationProductDraft,
+  selectedProductId: string | null,
+): AdministrationProduct {
+  const sizes = draft.sizes.length > 0 ? draft.sizes : ["UN"];
+  const colors = draft.colors.length > 0 ? draft.colors : ["Padrao"];
+  const models = draft.models.length > 0 ? draft.models : ["Basico"];
+  const variantCount = sizes.length * colors.length * models.length;
+  const stockPerVariant =
+    variantCount > 0 ? Math.max(1, Math.floor(draft.totalStockQuantity / variantCount) || 1) : 0;
+  const price = parseCurrencyInput(draft.basePrice);
+
+  return {
+    id: selectedProductId ?? `draft-${Date.now()}`,
+    name: draft.name.trim() || "Novo produto",
+    description: draft.description.trim(),
+    category: draft.category || "Sem categoria",
+    colorLabel: draft.colors[0] ?? "Sem cor",
+    basePrice: price,
+    imageUrls: draft.imageUrls.filter(Boolean),
+    badge: draft.isActive ? "ATIVO" : "PAUSADO",
+    isActive: draft.isActive,
+    totalStockQuantity: draft.totalStockQuantity,
+    variants: sizes.flatMap((size, sizeIndex) =>
+      colors.flatMap((color, colorIndex) =>
+        models.map((model, modelIndex) => ({
+          id: `${selectedProductId ?? "draft"}-${sizeIndex}-${colorIndex}-${modelIndex}`,
+          size,
+          color,
+          model,
+          price,
+          stockQuantity: stockPerVariant,
+          status: stockPerVariant > 3 ? "in-stock" : "low-stock",
+        })),
+      ),
+    ),
   };
 }
 
@@ -52,7 +100,8 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
 
       return (
         product.name.toLowerCase().includes(normalizedQuery) ||
-        product.category.toLowerCase().includes(normalizedQuery)
+        product.category.toLowerCase().includes(normalizedQuery) ||
+        product.description.toLowerCase().includes(normalizedQuery)
       );
     });
   }, [state.products, state.query]);
@@ -62,8 +111,19 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     state.products.find((product) => product.id === state.selectedProductId) ??
     null;
 
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / administrationProductsPerPage));
+  const currentPage = Math.min(state.currentPage, totalPages);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * administrationProductsPerPage,
+    currentPage * administrationProductsPerPage,
+  );
+
   function updateQuery(query: string) {
-    setState((current) => ({ ...current, query }));
+    setState((current) => ({ ...current, query, currentPage: 1 }));
+  }
+
+  function setCurrentPage(page: number) {
+    setState((current) => ({ ...current, currentPage: Math.max(1, Math.min(page, totalPages)) }));
   }
 
   function openExistingProduct(productId: string) {
@@ -75,6 +135,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       isProductDrawerOpen: true,
       editorMode: "edit",
       saveStatus: "idle",
+      feedbackMessage: undefined,
       draft: createDraftFromProduct(nextProduct),
     }));
   }
@@ -86,6 +147,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       isProductDrawerOpen: true,
       editorMode: "create",
       saveStatus: "idle",
+      feedbackMessage: undefined,
       draft: emptyAdministrationProductDraft,
     }));
   }
@@ -95,16 +157,18 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       ...current,
       isProductDrawerOpen: false,
       saveStatus: "idle",
+      feedbackMessage: undefined,
     }));
   }
 
-  function updateDraftField<K extends "name" | "category">(
+  function updateDraftField<K extends "name" | "category" | "description">(
     field: K,
     value: AdministrationProductDraft[K],
   ) {
     setState((current) => ({
       ...current,
       saveStatus: "idle",
+      feedbackMessage: undefined,
       draft: {
         ...current.draft,
         [field]: value,
@@ -116,6 +180,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     setState((current) => ({
       ...current,
       saveStatus: "idle",
+      feedbackMessage: undefined,
       draft: {
         ...current.draft,
         basePrice: formatCurrencyInput(value),
@@ -127,6 +192,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     setState((current) => ({
       ...current,
       saveStatus: "idle",
+      feedbackMessage: undefined,
       draft: {
         ...current.draft,
         totalStockQuantity: current.draft.totalStockQuantity + 1,
@@ -138,9 +204,22 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     setState((current) => ({
       ...current,
       saveStatus: "idle",
+      feedbackMessage: undefined,
       draft: {
         ...current.draft,
         totalStockQuantity: Math.max(0, current.draft.totalStockQuantity - 1),
+      },
+    }));
+  }
+
+  function toggleDraftActive() {
+    setState((current) => ({
+      ...current,
+      saveStatus: "idle",
+      feedbackMessage: undefined,
+      draft: {
+        ...current.draft,
+        isActive: !current.draft.isActive,
       },
     }));
   }
@@ -155,6 +234,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       return {
         ...current,
         saveStatus: "idle",
+        feedbackMessage: undefined,
         draft: {
           ...current.draft,
           [field]: nextValues,
@@ -177,11 +257,12 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       ];
 
       nextImageUrls[index] = value;
-      nextImageCrops[index] = { zoom: 1, offsetX: 0, offsetY: 0 };
+      nextImageCrops[index] = createDefaultImageCrop();
 
       return {
         ...current,
         saveStatus: "idle",
+        feedbackMessage: undefined,
         draft: {
           ...current.draft,
           imageUrls: nextImageUrls,
@@ -191,10 +272,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
     });
   }
 
-  function updateDraftImageCrop(
-    index: 0 | 1 | 2,
-    patch: Partial<AdministrationImageCrop>,
-  ) {
+  function updateDraftImageCrop(index: 0 | 1 | 2, patch: Partial<AdministrationImageCrop>) {
     setState((current) => {
       const nextImageCrops = [...current.draft.imageCrops] as [
         AdministrationImageCrop,
@@ -210,6 +288,7 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       return {
         ...current,
         saveStatus: "idle",
+        feedbackMessage: undefined,
         draft: {
           ...current.draft,
           imageCrops: nextImageCrops,
@@ -219,15 +298,64 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
   }
 
   function saveSelections() {
-    setState((current) => ({ ...current, saveStatus: "saved" }));
+    setState((current) => {
+      const nextProduct = createProductFromDraft(current.draft, current.selectedProductId);
+      const nextProducts =
+        current.editorMode === "create"
+          ? [nextProduct, ...current.products]
+          : current.products.map((product) => (product.id === nextProduct.id ? nextProduct : product));
+
+      return {
+        ...current,
+        products: nextProducts,
+        currentPage: current.editorMode === "create" ? 1 : current.currentPage,
+        selectedProductId: nextProduct.id,
+        editorMode: "edit",
+        saveStatus: "saved",
+        feedbackMessage:
+          current.editorMode === "create"
+            ? "Produto criado no MVP local."
+            : "Produto atualizado no MVP local.",
+      };
+    });
+  }
+
+  function deleteSelectedProduct() {
+    setState((current) => {
+      if (!current.selectedProductId) {
+        return current;
+      }
+
+      return {
+        ...current,
+        products: current.products.filter((product) => product.id !== current.selectedProductId),
+        currentPage: Math.max(
+          1,
+          Math.min(
+            current.currentPage,
+            Math.ceil((current.products.length - 1) / administrationProductsPerPage) || 1,
+          ),
+        ),
+        selectedProductId: null,
+        isProductDrawerOpen: false,
+        editorMode: "create",
+        saveStatus: "idle",
+        draft: emptyAdministrationProductDraft,
+        feedbackMessage: "Produto removido do MVP local.",
+      };
+    });
   }
 
   return {
     state,
     filteredProducts,
+    paginatedProducts,
+    currentPage,
+    totalPages,
     selectedProduct,
     actions: {
       updateQuery,
+      setCurrentPage,
       openExistingProduct,
       openNewProductDrawer,
       closeProductDrawer,
@@ -235,10 +363,12 @@ export function useAdministrationDashboardViewModel(initialProducts: Administrat
       updateDraftPrice,
       incrementDraftStock,
       decrementDraftStock,
+      toggleDraftActive,
       toggleDraftListField,
       updateDraftImage,
       updateDraftImageCrop,
       saveSelections,
+      deleteSelectedProduct,
     },
   };
 }

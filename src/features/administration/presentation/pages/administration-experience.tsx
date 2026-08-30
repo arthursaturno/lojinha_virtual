@@ -4,12 +4,13 @@ import { useState } from "react";
 
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
 import { administrationLayout } from "@/core/theme/tokens";
+import { AdminSidebar } from "@/core/ui/components/admin-sidebar";
 import type { AdministrationProduct } from "@/features/administration/domain/entities/administration-product";
 import { AdministrationHeader } from "@/features/administration/presentation/components/administration-header";
+import { AdministrationPagination } from "@/features/administration/presentation/components/administration-pagination";
 import { AdministrationProductDrawer } from "@/features/administration/presentation/components/administration-product-drawer";
 import { AdministrationProductsTable } from "@/features/administration/presentation/components/administration-products-table";
 import { AdministrationSearchBar } from "@/features/administration/presentation/components/administration-search-bar";
-import { AdministrationSidebar } from "@/features/administration/presentation/components/administration-sidebar";
 import { useAdministrationDashboardViewModel } from "@/features/administration/presentation/viewmodels/use-administration-dashboard-viewmodel";
 
 type AdministrationExperienceProps = {
@@ -32,21 +33,32 @@ export function AdministrationExperience({
       className="min-h-screen bg-[#f7f7f5] md:grid"
       style={{ gridTemplateColumns: `minmax(${administrationLayout.sidebarDesktopWidth}, ${administrationLayout.sidebarDesktopWidth}) minmax(0, 1fr)` }}
     >
-      <AdministrationSidebar
+      <AdminSidebar
         adminEmail={adminEmail}
         supabaseConfig={supabaseConfig}
+        activeSection="products"
         isMobileOpen={isMobileSidebarOpen}
         onOpenMobile={() => setIsMobileSidebarOpen(true)}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
 
       <main className="px-4 pb-8 pt-[72px] md:px-8 md:py-8">
-        <AdministrationHeader totalProducts={viewModel.filteredProducts.length} onCreateProduct={actions.openNewProductDrawer} />
+        <AdministrationHeader
+          totalProducts={viewModel.filteredProducts.length}
+          feedbackMessage={state.feedbackMessage}
+          onCreateProduct={actions.openNewProductDrawer}
+        />
         <AdministrationSearchBar query={state.query} onQueryChange={actions.updateQuery} />
         <AdministrationProductsTable
-          products={viewModel.filteredProducts}
+          products={viewModel.paginatedProducts}
           selectedProductId={state.selectedProductId}
           onOpenProduct={actions.openExistingProduct}
+        />
+        <AdministrationPagination
+          currentPage={viewModel.currentPage}
+          totalPages={viewModel.totalPages}
+          totalItems={viewModel.filteredProducts.length}
+          onPageChange={actions.setCurrentPage}
         />
         <AdministrationProductDrawer
           isOpen={state.isProductDrawerOpen}
@@ -58,9 +70,11 @@ export function AdministrationExperience({
           onPriceChange={actions.updateDraftPrice}
           onIncrementStock={actions.incrementDraftStock}
           onDecrementStock={actions.decrementDraftStock}
+          onToggleActive={actions.toggleDraftActive}
           onToggleOption={actions.toggleDraftListField}
           onImageChange={actions.updateDraftImage}
           onImageCropChange={actions.updateDraftImageCrop}
+          onDelete={actions.deleteSelectedProduct}
           onSave={actions.saveSelections}
         />
       </main>

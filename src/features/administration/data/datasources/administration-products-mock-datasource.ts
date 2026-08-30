@@ -8,11 +8,13 @@ const products: AdministrationProductDto[] = [
   {
     id: "admin-1",
     name: "Camiseta Core Oversized",
+    description: "Camiseta em algodao premium com modelagem ampla para vitrine casual.",
     category: "Camisetas",
     color_label: "Off white",
     base_price: 219.9,
     image_urls: ["/assets/camiseta-core.png", "/assets/hero-clothing.png", "/assets/camiseta-core.png"],
     badge: "NOVO",
+    is_active: true,
     total_stock_quantity: 67,
     variants: [
       { id: "1", size: "G", color: "Preto", model: "Oversized", price: 219.9, stock_quantity: 12, status: "in-stock" },
@@ -23,10 +25,12 @@ const products: AdministrationProductDto[] = [
   {
     id: "admin-2",
     name: "Jaqueta Axis",
+    description: "Jaqueta estruturada para clima ameno com foco em composicao urbana.",
     category: "Jaquetas",
     color_label: "Preto",
     base_price: 399.9,
     image_urls: ["/assets/hero-clothing.png", "/assets/camiseta-core.png", "/assets/hero-clothing.png"],
+    is_active: true,
     total_stock_quantity: 34,
     variants: [
       { id: "4", size: "M", color: "Preto", model: "Utility", price: 399.9, stock_quantity: 9, status: "in-stock" },
@@ -37,10 +41,12 @@ const products: AdministrationProductDto[] = [
   {
     id: "admin-3",
     name: "Camisa Utility Overshirt",
+    description: "Sobrecamisa com pegada utilitaria, bolso frontal e acabamento encorpado.",
     category: "Roupas",
     color_label: "Preto",
     base_price: 279.9,
     image_urls: ["/assets/hero-clothing.png", "/assets/bolsa-utility.png", "/assets/camiseta-core.png"],
+    is_active: false,
     total_stock_quantity: 48,
     variants: [
       { id: "7", size: "P", color: "Preto", model: "Utility", price: 279.9, stock_quantity: 14, status: "in-stock" },
@@ -51,10 +57,12 @@ const products: AdministrationProductDto[] = [
   {
     id: "admin-4",
     name: "Camiseta Street Logo",
+    description: "Base leve com estampa frontal para giro alto no catalogo.",
     category: "Camisetas",
     color_label: "Branco",
     base_price: 199.9,
     image_urls: ["/assets/camiseta-core.png", "/assets/hero-clothing.png", "/assets/camiseta-core.png"],
+    is_active: true,
     total_stock_quantity: 61,
     variants: [
       { id: "10", size: "M", color: "Branco", model: "Street", price: 199.9, stock_quantity: 15, status: "in-stock" },
@@ -65,10 +73,12 @@ const products: AdministrationProductDto[] = [
   {
     id: "admin-5",
     name: "Bolsa Utility Cross",
+    description: "Bolsa compacta para uso diario com divisorias internas e alca regulavel.",
     category: "Acessorios",
     color_label: "Preto",
     base_price: 189.9,
     image_urls: ["/assets/bolsa-utility.png", "/assets/hero-clothing.png", "/assets/camiseta-core.png"],
+    is_active: true,
     total_stock_quantity: 29,
     variants: [
       { id: "13", size: "UN", color: "Preto", model: "Utility", price: 189.9, stock_quantity: 12, status: "in-stock" },

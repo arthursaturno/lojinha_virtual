@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { FiCrop, FiImage, FiMinus, FiPlus, FiUpload, FiX } from "react-icons/fi";
+import { FiCrop, FiImage, FiMinus, FiPlus, FiTrash2, FiUpload, FiX } from "react-icons/fi";
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
@@ -24,16 +24,18 @@ type AdministrationProductDrawerProps = {
   draft: AdministrationProductDraft;
   onClose(): void;
   onSave(): void;
-  onFieldChange(field: "name" | "category", value: string): void;
+  onFieldChange(field: "name" | "category" | "description", value: string): void;
   onPriceChange(value: string): void;
   onIncrementStock(): void;
   onDecrementStock(): void;
+  onToggleActive(): void;
   onToggleOption(field: "sizes" | "colors" | "models", value: string): void;
   onImageChange(index: 0 | 1 | 2, value: string): void;
   onImageCropChange(
     index: 0 | 1 | 2,
     patch: { zoom?: number; offsetX?: number; offsetY?: number },
   ): void;
+  onDelete(): void;
 };
 
 type TextFieldProps = {
@@ -79,6 +81,26 @@ function TextField({ label, value, placeholder, onChange }: TextFieldProps) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="h-11 w-full border border-[var(--color-border)] bg-white px-3 outline-none"
+        style={{ fontSize: administrationTypography.body }}
+        placeholder={placeholder}
+      />
+    </label>
+  );
+}
+
+function TextAreaField({ label, value, placeholder, onChange }: TextFieldProps) {
+  return (
+    <label className="block">
+      <span
+        className="mb-2 block font-black text-[var(--color-muted)]"
+        style={{ fontSize: administrationTypography.fieldLabel }}
+      >
+        {label}
+      </span>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="min-h-28 w-full resize-y border border-[var(--color-border)] bg-white px-3 py-3 outline-none"
         style={{ fontSize: administrationTypography.body }}
         placeholder={placeholder}
       />
@@ -193,9 +215,11 @@ export function AdministrationProductDrawer({
   onPriceChange,
   onIncrementStock,
   onDecrementStock,
+  onToggleActive,
   onToggleOption,
   onImageChange,
   onImageCropChange,
+  onDelete,
 }: AdministrationProductDrawerProps) {
   const createdBlobUrlsRef = useRef<string[]>([]);
   const [cropModalState, setCropModalState] = useState<CropModalState | null>(null);
@@ -332,7 +356,10 @@ export function AdministrationProductDrawer({
             >
               {mode === "create" ? "NOVO PRODUTO" : "EDITAR PRODUTO"}
             </span>
-            <h2 className="mt-1 text-[22px] font-black text-[var(--color-foreground)]">
+            <h2
+              className="mt-1 font-black text-[var(--color-foreground)]"
+              style={{ fontSize: "clamp(1.25rem, 1.16rem + 0.35vw, 1.5rem)" }}
+            >
               {draft.name || "Produto sem nome"}
             </h2>
           </div>
@@ -364,6 +391,13 @@ export function AdministrationProductDrawer({
               value={draft.name}
               placeholder="Ex.: Camiseta Core Oversized"
               onChange={(value) => onFieldChange("name", value)}
+            />
+
+            <TextAreaField
+              label="DESCRICAO"
+              value={draft.description}
+              placeholder="Explique tecido, caimento, detalhes e ocasiao de uso."
+              onChange={(value) => onFieldChange("description", value)}
             />
 
             <SingleSelectGroup
@@ -414,6 +448,35 @@ export function AdministrationProductDrawer({
                   </button>
                 </div>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 border border-[var(--color-border)] bg-[#fafaf8] p-3">
+              <div>
+                <span
+                  className="block font-black text-[var(--color-foreground)]"
+                  style={{ fontSize: administrationTypography.fieldLabel }}
+                >
+                  VISIVEL NA LOJA
+                </span>
+                <span
+                  className="mt-1 block text-[var(--color-muted)]"
+                  style={{ fontSize: administrationTypography.helper }}
+                >
+                  {draft.isActive ? "Produto ativo para clientes." : "Produto pausado e oculto da vitrine."}
+                </span>
+              </div>
+              <button
+                type="button"
+                className={`h-10 min-w-24 border px-3 font-black ${
+                  draft.isActive
+                    ? "border-black bg-[var(--color-lime)] text-black"
+                    : "border-[var(--color-border)] bg-white text-[var(--color-foreground)]"
+                }`}
+                style={{ fontSize: administrationTypography.action }}
+                onClick={onToggleActive}
+              >
+                {draft.isActive ? "ATIVO" : "PAUSADO"}
+              </button>
             </div>
           </div>
         </section>
@@ -549,7 +612,21 @@ export function AdministrationProductDrawer({
           </div>
         </section>
 
-        <div className="mt-5 flex flex-col gap-3 md:flex-row md:justify-end">
+        <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          {mode === "edit" ? (
+            <button
+              type="button"
+              className="inline-flex h-11 items-center justify-center gap-2 border border-red-700 bg-white px-5 font-black text-red-800"
+              style={{ fontSize: administrationTypography.action }}
+              onClick={onDelete}
+            >
+              <FiTrash2 aria-hidden="true" />
+              EXCLUIR PRODUTO
+            </button>
+          ) : (
+            <span className="hidden md:block" />
+          )}
+          <div className="flex flex-col gap-3 md:flex-row">
           <button
             type="button"
             className="h-11 border border-[var(--color-border)] bg-white px-5 font-black"
@@ -566,6 +643,7 @@ export function AdministrationProductDrawer({
           >
             {saveStatus === "saved" ? "SALVO OK" : "SALVAR PRODUTO"}
           </button>
+          </div>
         </div>
       </aside>
 

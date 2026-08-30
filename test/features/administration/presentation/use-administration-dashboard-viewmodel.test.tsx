@@ -8,10 +8,12 @@ const products: AdministrationProduct[] = [
   {
     id: "1",
     name: "Camiseta Core Oversized",
+    description: "Produto de teste 1",
     category: "Camisetas",
     colorLabel: "Preto",
     basePrice: 219.9,
     imageUrls: ["/assets/camiseta-core.png", "/assets/hero-clothing.png", ""],
+    isActive: true,
     totalStockQuantity: 10,
     variants: [
       {
@@ -37,10 +39,12 @@ const products: AdministrationProduct[] = [
   {
     id: "2",
     name: "Bolsa Utility Cross",
+    description: "Produto de teste 2",
     category: "Acessorios",
     colorLabel: "Preto",
     basePrice: 189.9,
     imageUrls: ["/assets/bolsa-utility.png", "", ""],
+    isActive: false,
     totalStockQuantity: 8,
     variants: [
       {
@@ -57,6 +61,23 @@ const products: AdministrationProduct[] = [
 ];
 
 describe("useAdministrationDashboardViewModel", () => {
+  it("paginates products in groups of ten and changes page", () => {
+    const manyProducts = Array.from({ length: 11 }, (_, index) => ({
+      ...products[index % products.length],
+      id: `page-${index + 1}`,
+      name: `Produto ${index + 1}`,
+    }));
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(manyProducts));
+
+    expect(result.current.paginatedProducts).toHaveLength(10);
+    expect(result.current.totalPages).toBe(2);
+
+    act(() => result.current.actions.setCurrentPage(2));
+
+    expect(result.current.currentPage).toBe(2);
+    expect(result.current.paginatedProducts).toHaveLength(1);
+  });
+
   it("filters products by query", () => {
     const { result } = renderHook(() => useAdministrationDashboardViewModel(products));
 
@@ -74,18 +95,23 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.selectedProduct?.id).toBe("2");
     expect(result.current.state.isProductDrawerOpen).toBe(true);
     expect(result.current.state.draft.name).toBe("Bolsa Utility Cross");
+    expect(result.current.state.draft.description).toBe("Produto de teste 2");
     expect(result.current.state.draft.sizes).toEqual(["UN"]);
     expect(result.current.state.draft.colors).toEqual(["Preto"]);
     expect(result.current.state.draft.models).toEqual(["Utility"]);
     expect(result.current.state.draft.imageCrops[0]).toEqual({ zoom: 1, offsetX: 0, offsetY: 0 });
   });
 
-  it("marks save status after saving selections", () => {
+  it("marks save status after updating an existing product", () => {
     const { result } = renderHook(() => useAdministrationDashboardViewModel(products));
 
-    act(() => result.current.actions.saveSelections());
+    act(() => {
+      result.current.actions.openExistingProduct("1");
+      result.current.actions.saveSelections();
+    });
 
     expect(result.current.state.saveStatus).toBe("saved");
+    expect(result.current.state.feedbackMessage).toBe("Produto atualizado no MVP local.");
   });
 
   it("opens empty drawer when creating a new product", () => {
@@ -96,6 +122,7 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.state.editorMode).toBe("create");
     expect(result.current.state.isProductDrawerOpen).toBe(true);
     expect(result.current.state.draft.name).toBe("");
+    expect(result.current.state.draft.isActive).toBe(true);
   });
 
   it("formats price while typing and toggles structured product options", () => {
@@ -109,6 +136,7 @@ describe("useAdministrationDashboardViewModel", () => {
       result.current.actions.toggleDraftListField("sizes", "M");
       result.current.actions.toggleDraftListField("colors", "Preto");
       result.current.actions.toggleDraftListField("models", "Oversized");
+      result.current.actions.toggleDraftActive();
     });
 
     expect(result.current.state.draft.basePrice).toBe("100,00");
@@ -116,6 +144,7 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.state.draft.sizes).toEqual(["M"]);
     expect(result.current.state.draft.colors).toEqual(["Preto"]);
     expect(result.current.state.draft.models).toEqual(["Oversized"]);
+    expect(result.current.state.draft.isActive).toBe(false);
   });
 
   it("resets crop on image change and updates crop controls", () => {
@@ -129,5 +158,41 @@ describe("useAdministrationDashboardViewModel", () => {
 
     expect(result.current.state.draft.imageUrls[0]).toBe("blob:test");
     expect(result.current.state.draft.imageCrops[0]).toEqual({ zoom: 1.8, offsetX: 0, offsetY: -12 });
+  });
+
+  it("creates a product in local state from the drawer draft", () => {
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(products));
+
+    act(() => {
+      result.current.actions.openNewProductDrawer();
+      result.current.actions.updateDraftField("name", "Camisa Linho");
+      result.current.actions.updateDraftField("description", "Descricao nova");
+      result.current.actions.updateDraftField("category", "Camisas");
+      result.current.actions.updateDraftPrice("25990");
+      result.current.actions.incrementDraftStock();
+      result.current.actions.incrementDraftStock();
+      result.current.actions.toggleDraftListField("sizes", "M");
+      result.current.actions.toggleDraftListField("colors", "Branco");
+      result.current.actions.toggleDraftListField("models", "Linho");
+      result.current.actions.saveSelections();
+    });
+
+    expect(result.current.state.products[0].name).toBe("Camisa Linho");
+    expect(result.current.state.products[0].description).toBe("Descricao nova");
+    expect(result.current.state.products[0].category).toBe("Camisas");
+    expect(result.current.state.feedbackMessage).toBe("Produto criado no MVP local.");
+  });
+
+  it("deletes the selected product from local state", () => {
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(products));
+
+    act(() => {
+      result.current.actions.openExistingProduct("2");
+      result.current.actions.deleteSelectedProduct();
+    });
+
+    expect(result.current.state.products).toHaveLength(1);
+    expect(result.current.state.isProductDrawerOpen).toBe(false);
+    expect(result.current.state.feedbackMessage).toBe("Produto removido do MVP local.");
   });
 });
