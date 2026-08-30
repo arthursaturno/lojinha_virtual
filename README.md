@@ -1,10 +1,10 @@
 ﻿# Ezzion Imports
 
-CatÃ¡logo virtual responsivo para a **Ezzion Imports**, desenvolvido para permitir que clientes consultem os produtos disponÃ­veis, visualizem suas caracterÃ­sticas e entrem em contato diretamente com o vendedor por meio do WhatsApp.
+Catálogo virtual responsivo para a **Ezzion Imports**, desenvolvido para permitir que clientes consultem os produtos disponíveis, visualizem suas características e entrem em contato diretamente com o vendedor por meio do WhatsApp.
 
-O projeto tem como objetivo disponibilizar uma experiÃªncia simples de consulta de produtos, sem implementar um processo tradicional de comÃ©rcio eletrÃ´nico.
+O projeto tem como objetivo disponibilizar uma experiência simples de consulta de produtos, sem implementar um processo tradicional de comércio eletrônico.
 
-O cliente poderÃ¡ visualizar os produtos disponibilizados pelo administrador, utilizar filtros e pesquisar itens, consultar preÃ§os, cores, tamanhos e outras caracterÃ­sticas e, apÃ³s selecionar as opÃ§Ãµes necessÃ¡rias, iniciar uma conversa com o vendedor pelo WhatsApp.
+O cliente poderá visualizar os produtos disponibilizados pelo administrador, utilizar filtros e pesquisar itens, consultar preços, cores, tamanhos e outras características e, após selecionar as opções necessárias, iniciar uma conversa com o vendedor pelo WhatsApp.
 
 > **Status:** MVP em desenvolvimento.
 
@@ -12,43 +12,43 @@ O cliente poderÃ¡ visualizar os produtos disponibilizados pelo administrador, 
 
 ## 1. Objetivo do projeto
 
-O Ezzion Imports serÃ¡ uma plataforma de catÃ¡logo digital para divulgaÃ§Ã£o dos produtos comercializados pela loja.
+O Ezzion Imports será uma plataforma de catálogo digital para divulgação dos produtos comercializados pela loja.
 
-A aplicaÃ§Ã£o serÃ¡ dividida em duas Ã¡reas principais:
+A aplicação será dividida em duas áreas principais:
 
-- **Ãrea pÃºblica:** destinada aos clientes;
-- **Ãrea administrativa:** destinada ao gerenciamento da loja.
+- **Área pública:** destinada aos clientes;
+- **Área administrativa:** destinada ao gerenciamento da loja.
 
-O sistema nÃ£o terÃ¡ como objetivo realizar vendas diretamente pela plataforma. O processo comercial serÃ¡ finalizado por meio do contato entre cliente e vendedor atravÃ©s do WhatsApp.
+O sistema não terá como objetivo realizar vendas diretamente pela plataforma. O processo comercial será finalizado por meio do contato entre cliente e vendedor através do WhatsApp.
 
 ### Fluxo principal
 
 ```text
 Cliente
-   â”‚
-   â–¼
+   │
+   ▼
 Acessa a loja
-   â”‚
-   â–¼
+   │
+   ▼
 Visualiza produtos
-   â”‚
-   â”œâ”€â”€ Pesquisa
-   â”œâ”€â”€ Categorias
-   â””â”€â”€ Filtros
-   â”‚
-   â–¼
+   │
+   ├── Pesquisa
+   ├── Categorias
+   └── Filtros
+   │
+   ▼
 Seleciona um produto
-   â”‚
-   â–¼
-Seleciona as opÃ§Ãµes disponÃ­veis
-   â”‚
-   â–¼
+   │
+   ▼
+Seleciona as opções disponíveis
+   │
+   ▼
 Verifica disponibilidade
-   â”‚
-   â–¼
+   │
+   ▼
 Falar com vendedor
-   â”‚
-   â–¼
+   │
+   ▼
 WhatsApp
 ```
 
@@ -56,53 +56,53 @@ WhatsApp
 
 # 2. Escopo do MVP
 
-## 2.1 Ãrea pÃºblica
+## 2.1 Área pública
 
-O cliente poderÃ¡:
+O cliente poderá:
 
 - Acessar a loja sem realizar login;
-- Visualizar os produtos disponÃ­veis;
+- Visualizar os produtos disponíveis;
 - Pesquisar produtos;
 - Navegar por categorias;
 - Utilizar filtros;
-- Visualizar preÃ§o;
+- Visualizar preço;
 - Visualizar imagens;
-- Visualizar descriÃ§Ã£o;
-- Visualizar tamanhos disponÃ­veis;
-- Visualizar cores disponÃ­veis;
+- Visualizar descrição;
+- Visualizar tamanhos disponíveis;
+- Visualizar cores disponíveis;
 - Visualizar outros atributos cadastrados;
-- Selecionar combinaÃ§Ãµes de atributos;
-- Verificar a disponibilidade da combinaÃ§Ã£o selecionada;
+- Selecionar combinações de atributos;
+- Verificar a disponibilidade da combinação selecionada;
 - Entrar em contato com o vendedor pelo WhatsApp.
 
 ### Exemplos de produtos
 
-O sistema deverÃ¡ permitir diferentes tipos de produtos, como:
+O sistema deverá permitir diferentes tipos de produtos, como:
 
 ```text
-CalÃ§ados
+Calçados
 Roupas
 Camisas
 Camisetas
-RelÃ³gios
+Relógios
 Colares
 Bolsas
-AcessÃ³rios
+Acessórios
 ```
 
-A estrutura nÃ£o serÃ¡ limitada a esses tipos.
+A estrutura não será limitada a esses tipos.
 
 ---
 
 # 3. Produtos e atributos
 
-Um dos principais requisitos do sistema Ã© permitir que diferentes produtos possuam diferentes caracterÃ­sticas.
+Um dos principais requisitos do sistema é permitir que diferentes produtos possuam diferentes características.
 
-Por esse motivo, os atributos nÃ£o serÃ£o definidos exclusivamente no cÃ³digo da aplicaÃ§Ã£o.
+Por esse motivo, os atributos não serão definidos exclusivamente no código da aplicação.
 
-O administrador poderÃ¡ definir quais caracterÃ­sticas fazem sentido para cada produto.
+O administrador poderá definir quais características fazem sentido para cada produto.
 
-### Exemplo â€” Camiseta
+### Exemplo — Camiseta
 
 ```text
 Produto: Camiseta Nike
@@ -119,10 +119,10 @@ Tamanho:
 - GG
 ```
 
-### Exemplo â€” RelÃ³gio
+### Exemplo — Relógio
 
 ```text
-Produto: RelÃ³gio X
+Produto: Relógio X
 
 Cor:
 - Preto
@@ -130,7 +130,7 @@ Cor:
 - Prata
 ```
 
-### Exemplo â€” Colar
+### Exemplo — Colar
 
 ```text
 Produto: Colar X
@@ -145,80 +145,80 @@ Cor:
 - Prata
 ```
 
-Essa abordagem permite que novos tipos de produtos sejam adicionados sem a necessidade de modificar a estrutura principal da aplicaÃ§Ã£o.
+Essa abordagem permite que novos tipos de produtos sejam adicionados sem a necessidade de modificar a estrutura principal da aplicação.
 
 ---
 
 # 4. Controle de estoque
 
-O estoque serÃ¡ controlado considerando as combinaÃ§Ãµes de atributos do produto quando necessÃ¡rio.
+O estoque será controlado considerando as combinações de atributos do produto quando necessário.
 
 ### Exemplo
 
 ```text
 Produto: Camiseta X
 
-Preto + P  â†’ 3 unidades
-Preto + M  â†’ 5 unidades
-Preto + G  â†’ 0 unidades
+Preto + P  → 3 unidades
+Preto + M  → 5 unidades
+Preto + G  → 0 unidades
 
-Branco + P â†’ 2 unidades
-Branco + M â†’ 4 unidades
-Branco + G â†’ 1 unidade
+Branco + P → 2 unidades
+Branco + M → 4 unidades
+Branco + G → 1 unidade
 ```
 
-Dessa forma, o cliente poderÃ¡ visualizar somente combinaÃ§Ãµes que estejam disponÃ­veis.
+Dessa forma, o cliente poderá visualizar somente combinações que estejam disponíveis.
 
-Produtos que nÃ£o possuem variaÃ§Ãµes tambÃ©m poderÃ£o possuir controle de estoque simples.
+Produtos que não possuem variações também poderão possuir controle de estoque simples.
 
 ---
 
 # 5. WhatsApp
 
-O sistema nÃ£o realizarÃ¡ o processo de venda diretamente.
+O sistema não realizará o processo de venda diretamente.
 
-ApÃ³s selecionar as opÃ§Ãµes necessÃ¡rias do produto, o cliente poderÃ¡ utilizar o botÃ£o:
+Após selecionar as opções necessárias do produto, o cliente poderá utilizar o botão:
 
 ```text
 Falar com o vendedor
 ```
 
-O sistema deverÃ¡ gerar automaticamente uma mensagem contendo as informaÃ§Ãµes selecionadas.
+O sistema deverá gerar automaticamente uma mensagem contendo as informações selecionadas.
 
 ### Exemplo
 
 ```text
-OlÃ¡! Tenho interesse no seguinte produto:
+Olá! Tenho interesse no seguinte produto:
 
-Produto: TÃªnis Nike
+Produto: Tênis Nike
 Cor: Preto
 Tamanho: 40
-PreÃ§o: R$ 299,90
+Preço: R$ 299,90
 
-Gostaria de saber mais informaÃ§Ãµes.
+Gostaria de saber mais informações.
 ```
 
-O usuÃ¡rio serÃ¡ direcionado para o WhatsApp do vendedor.
+O usuário será direcionado para o WhatsApp do vendedor.
 
 ### Regra
 
-O botÃ£o de contato deverÃ¡ permanecer indisponÃ­vel enquanto existirem atributos obrigatÃ³rios que ainda nÃ£o tenham sido selecionados.
+O botão de contato deverá permanecer indisponível enquanto existirem atributos obrigatórios que ainda não tenham sido selecionados.
 
-Produtos sem atributos obrigatÃ³rios poderÃ£o permitir o contato diretamente.
+Produtos sem atributos obrigatórios poderão permitir o contato diretamente.
 
 ---
 
-# 6. Ãrea administrativa
+# 6. Área administrativa
 
-A aplicaÃ§Ã£o contarÃ¡ com uma Ã¡rea administrativa exclusiva para o responsÃ¡vel pela loja.
+A aplicação contará com uma área administrativa exclusiva para o responsável pela loja.
 
-O administrador serÃ¡ responsÃ¡vel por controlar todo o conteÃºdo disponibilizado na Ã¡rea pÃºblica.
+O administrador será responsável por controlar todo o conteúdo disponibilizado na área pública.
 
 ## Funcionalidades
 
 ### Dashboard
 
-VisualizaÃ§Ã£o de informaÃ§Ãµes bÃ¡sicas:
+Visualização de informações básicas:
 
 - Quantidade de produtos;
 - Produtos ativos;
@@ -229,14 +229,14 @@ VisualizaÃ§Ã£o de informaÃ§Ãµes bÃ¡sicas:
 
 ### Produtos
 
-O administrador poderÃ¡:
+O administrador poderá:
 
 - Cadastrar produtos;
 - Editar produtos;
 - Ativar/desativar produtos;
 - Excluir produtos;
-- Alterar preÃ§os;
-- Adicionar descriÃ§Ã£o;
+- Alterar preços;
+- Adicionar descrição;
 - Adicionar imagens;
 - Definir categoria;
 - Criar atributos;
@@ -247,7 +247,7 @@ O administrador poderÃ¡:
 
 ### Categorias
 
-O administrador poderÃ¡:
+O administrador poderá:
 
 - Criar categorias;
 - Editar categorias;
@@ -257,22 +257,22 @@ O administrador poderÃ¡:
 Exemplo:
 
 ```text
-CalÃ§ados
+Calçados
 Roupas
-RelÃ³gios
-AcessÃ³rios
+Relógios
+Acessórios
 ```
 
 ---
 
 ### Estoque
 
-O administrador poderÃ¡ visualizar e alterar o estoque das diferentes combinaÃ§Ãµes de produtos.
+O administrador poderá visualizar e alterar o estoque das diferentes combinações de produtos.
 
 Exemplo:
 
 ```text
-TÃªnis X
+Tênis X
 
 Cor: Preto
 Tamanho: 39
@@ -289,41 +289,41 @@ Estoque: 0
 
 ---
 
-### ConfiguraÃ§Ãµes
+### Configurações
 
-O administrador poderÃ¡ configurar informaÃ§Ãµes bÃ¡sicas da loja, principalmente:
+O administrador poderá configurar informações básicas da loja, principalmente:
 
-- NÃºmero do WhatsApp;
+- Número do WhatsApp;
 - Nome da loja;
-- InformaÃ§Ãµes de contato;
-- InformaÃ§Ãµes utilizadas na apresentaÃ§Ã£o da loja.
+- Informações de contato;
+- Informações utilizadas na apresentação da loja.
 
 ---
 
-# 7. AutenticaÃ§Ã£o
+# 7. Autenticação
 
-Somente o administrador terÃ¡ acesso Ã  Ã¡rea administrativa.
+Somente o administrador terá acesso Ã  área administrativa.
 
-O cliente nÃ£o precisarÃ¡ criar uma conta.
+O cliente não precisará criar uma conta.
 
-### Ãrea pÃºblica
+### Área pública
 
 ```text
-Sem autenticaÃ§Ã£o
+Sem autenticação
 ```
 
-### Ãrea administrativa
+### Área administrativa
 
 ```text
 E-mail
 Senha
-   â†“
+   ↓
 Supabase Auth
-   â†“
+   ↓
 Painel administrativo
 ```
 
-Inicialmente, o sistema serÃ¡ projetado para possuir apenas uma conta administrativa.
+Inicialmente, o sistema será projetado para possuir apenas uma conta administrativa.
 
 ---
 
@@ -517,26 +517,26 @@ Regras principais:
 ---
 # 12. Tecnologias
 
-| Tecnologia | UtilizaÃ§Ã£o |
+| Tecnologia | Utilização |
 |---|---|
-| Next.js | Framework da aplicaÃ§Ã£o |
-| React | ConstruÃ§Ã£o da interface |
+| Next.js | Framework da aplicação |
+| React | Construção da interface |
 | TypeScript | Tipagem e desenvolvimento |
 | Tailwind CSS | Estilizacao responsiva da interface |
 | React Icons | Icones da interface e WhatsApp |
 | Supabase | Backend as a Service |
 | PostgreSQL | Banco de dados |
-| Supabase Auth | AutenticaÃ§Ã£o administrativa |
+| Supabase Auth | Autenticação administrativa |
 | Supabase Storage | Armazenamento de imagens |
-| WhatsApp | ComunicaÃ§Ã£o entre cliente e vendedor |
-| Git | Controle de versÃ£o |
-| GitHub | Hospedagem do cÃ³digo |
+| WhatsApp | Comunicação entre cliente e vendedor |
+| Git | Controle de versão |
+| GitHub | Hospedagem do código |
 
 ---
 
 # 13. Banco de dados
 
-A estrutura inicial do banco serÃ¡ composta pelas seguintes entidades:
+A estrutura inicial do banco será composta pelas seguintes entidades:
 
 ```text
 profiles
@@ -554,18 +554,18 @@ store_settings
 
 ```text
 categories
-    â”‚
-    â””â”€â”€â”€â”€â”€â”€â”€â”€ products
-                  â”‚
-                  â”œâ”€â”€â”€â”€â”€â”€â”€â”€ product_images
-                  â”‚
-                  â”œâ”€â”€â”€â”€â”€â”€â”€â”€ product_attributes
-                  â”‚                 â”‚
-                  â”‚                 â””â”€â”€ attribute_values
-                  â”‚
-                  â””â”€â”€â”€â”€â”€â”€â”€â”€ product_variants
-                                    â”‚
-                                    â””â”€â”€ variant_attribute_values
+    │
+    └──────── products
+                  │
+                  ├──────── product_images
+                  │
+                  ├──────── product_attributes
+                  │                 │
+                  │                 └── attribute_values
+                  │
+                  └──────── product_variants
+                                    │
+                                    └── variant_attribute_values
 ```
 
 ---
@@ -576,162 +576,162 @@ categories
 
 ```text
 Product
-â”œâ”€â”€ id
-â”œâ”€â”€ category
-â”œâ”€â”€ name
-â”œâ”€â”€ slug
-â”œâ”€â”€ description
-â”œâ”€â”€ price
-â”œâ”€â”€ promotionalPrice
-â”œâ”€â”€ isActive
-â”œâ”€â”€ createdAt
-â””â”€â”€ updatedAt
+├── id
+├── category
+├── name
+├── slug
+├── description
+├── price
+├── promotionalPrice
+├── isActive
+├── createdAt
+└── updatedAt
 ```
 
 ### Category
 
 ```text
 Category
-â”œâ”€â”€ id
-â”œâ”€â”€ name
-â”œâ”€â”€ slug
-â”œâ”€â”€ description
-â”œâ”€â”€ isActive
-â”œâ”€â”€ createdAt
-â””â”€â”€ updatedAt
+├── id
+├── name
+├── slug
+├── description
+├── isActive
+├── createdAt
+└── updatedAt
 ```
 
 ### Product Image
 
 ```text
 ProductImage
-â”œâ”€â”€ id
-â”œâ”€â”€ productId
-â”œâ”€â”€ url
-â”œâ”€â”€ sortOrder
-â””â”€â”€ createdAt
+├── id
+├── productId
+├── url
+├── sortOrder
+└── createdAt
 ```
 
 ### Product Attribute
 
 ```text
 ProductAttribute
-â”œâ”€â”€ id
-â”œâ”€â”€ productId
-â”œâ”€â”€ name
-â”œâ”€â”€ isRequired
-â””â”€â”€ sortOrder
+├── id
+├── productId
+├── name
+├── isRequired
+└── sortOrder
 ```
 
 ### Attribute Value
 
 ```text
 AttributeValue
-â”œâ”€â”€ id
-â”œâ”€â”€ attributeId
-â”œâ”€â”€ value
-â””â”€â”€ sortOrder
+├── id
+├── attributeId
+├── value
+└── sortOrder
 ```
 
 ### Product Variant
 
 ```text
 ProductVariant
-â”œâ”€â”€ id
-â”œâ”€â”€ productId
-â”œâ”€â”€ sku
-â”œâ”€â”€ price
-â”œâ”€â”€ stockQuantity
-â”œâ”€â”€ isActive
-â”œâ”€â”€ createdAt
-â””â”€â”€ updatedAt
+├── id
+├── productId
+├── sku
+├── price
+├── stockQuantity
+├── isActive
+├── createdAt
+└── updatedAt
 ```
 
 ---
 
-# 15. SeguranÃ§a
+# 15. Segurança
 
-O sistema deverÃ¡ utilizar as polÃ­ticas de seguranÃ§a disponibilizadas pelo Supabase, principalmente atravÃ©s de **Row Level Security (RLS)**.
+O sistema deverá utilizar as políticas de segurança disponibilizadas pelo Supabase, principalmente através de **Row Level Security (RLS)**.
 
-A Ã¡rea pÃºblica poderÃ¡ consultar somente informaÃ§Ãµes necessÃ¡rias para a apresentaÃ§Ã£o da loja.
+A área pública poderá consultar somente informações necessárias para a apresentação da loja.
 
-OperaÃ§Ãµes administrativas deverÃ£o exigir autenticaÃ§Ã£o e autorizaÃ§Ã£o.
+Operações administrativas deverão exigir autenticação e autorização.
 
 Exemplo:
 
 ```text
 Cliente
-   â”‚
-   â”œâ”€â”€ SELECT produtos publicados
-   â”œâ”€â”€ SELECT categorias ativas
-   â””â”€â”€ SELECT informaÃ§Ãµes pÃºblicas
+   │
+   ├── SELECT produtos publicados
+   ├── SELECT categorias ativas
+   └── SELECT informações públicas
 ```
 
 ```text
 Administrador
-   â”‚
-   â”œâ”€â”€ CREATE
-   â”œâ”€â”€ READ
-   â”œâ”€â”€ UPDATE
-   â””â”€â”€ DELETE
+   │
+   ├── CREATE
+   ├── READ
+   ├── UPDATE
+   └── DELETE
 ```
 
-As credenciais sensÃ­veis do Supabase nÃ£o deverÃ£o ser expostas no frontend.
+As credenciais sensíveis do Supabase não deverão ser expostas no frontend.
 
 ---
 
 # 16. Responsividade
 
-A interface deverÃ¡ ser desenvolvida com abordagem **responsiva**, permitindo utilizaÃ§Ã£o em:
+A interface deverá ser desenvolvida com abordagem **responsiva**, permitindo utilização em:
 
 - Smartphones;
 - Tablets;
 - Notebooks;
 - Desktops.
 
-O catÃ¡logo deverÃ¡ se adaptar automaticamente ao tamanho da tela.
+O catálogo deverá se adaptar automaticamente ao tamanho da tela.
 
 ### Desktop
 
 ```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Logo                  Pesquisa       Menu   â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ Filtros   â”‚ Produto â”‚ Produto â”‚ Produto    â”‚
-â”‚           â”‚ Produto â”‚ Produto â”‚ Produto    â”‚
-â”‚           â”‚ Produto â”‚ Produto â”‚ Produto    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+┌─────────────────────────────────────────────┐
+│ Logo                  Pesquisa       Menu   │
+├───────────┬─────────────────────────────────┤
+│ Filtros   │ Produto │ Produto │ Produto    │
+│           │ Produto │ Produto │ Produto    │
+│           │ Produto │ Produto │ Produto    │
+└───────────┴─────────────────────────────────┘
 ```
 
 ### Mobile
 
 ```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Logo          Menu  â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ ðŸ”Ž Pesquisar        â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ Produto             â”‚
-â”‚                     â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ Produto             â”‚
-â”‚                     â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ Produto             â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+┌─────────────────────┐
+│ Logo          Menu  │
+├─────────────────────┤
+│ 🔎 Pesquisar        │
+├─────────────────────┤
+│ Produto             │
+│                     │
+├─────────────────────┤
+│ Produto             │
+│                     │
+├─────────────────────┤
+│ Produto             │
+└─────────────────────┘
 ```
 
 ---
 
-# 17. PÃ¡ginas
+# 17. Páginas
 
-## Ãrea pÃºblica
+## Área pública
 
 ```text
 /
 ```
 
-CatÃ¡logo principal.
+Catálogo principal.
 
 ```text
 /produto/[slug]
@@ -741,7 +741,7 @@ Detalhes do produto.
 
 ---
 
-## Ãrea administrativa
+## Área administrativa
 
 ```text
 /admin/login
@@ -771,7 +771,7 @@ Cadastro de produto.
 /admin/produtos/[id]
 ```
 
-EdiÃ§Ã£o de produto.
+Edição de produto.
 
 ```text
 /admin/categorias
@@ -783,266 +783,266 @@ Gerenciamento de categorias.
 /admin/configuracoes
 ```
 
-ConfiguraÃ§Ãµes da loja.
+Configurações da loja.
 
 ---
 
 # 18. Requisitos funcionais
 
-### RF01 â€” CatÃ¡logo
+### RF01 — Catálogo
 
-O sistema deverÃ¡ permitir que visitantes visualizem os produtos publicados pelo administrador.
+O sistema deverá permitir que visitantes visualizem os produtos publicados pelo administrador.
 
-### RF02 â€” Pesquisa
+### RF02 — Pesquisa
 
-O sistema deverÃ¡ permitir pesquisar produtos pelo nome.
+O sistema deverá permitir pesquisar produtos pelo nome.
 
-### RF03 â€” Categorias
+### RF03 — Categorias
 
-O sistema deverÃ¡ permitir filtrar produtos por categoria.
+O sistema deverá permitir filtrar produtos por categoria.
 
-### RF04 â€” Filtros
+### RF04 — Filtros
 
-O sistema deverÃ¡ permitir filtrar produtos utilizando atributos cadastrados.
+O sistema deverá permitir filtrar produtos utilizando atributos cadastrados.
 
-### RF05 â€” Detalhes
+### RF05 — Detalhes
 
-O sistema deverÃ¡ apresentar as informaÃ§Ãµes detalhadas de um produto.
+O sistema deverá apresentar as informações detalhadas de um produto.
 
-### RF06 â€” VariaÃ§Ãµes
+### RF06 — Variações
 
-O sistema deverÃ¡ permitir selecionar atributos disponÃ­veis de um produto.
+O sistema deverá permitir selecionar atributos disponíveis de um produto.
 
-### RF07 â€” Estoque
+### RF07 — Estoque
 
-O sistema deverÃ¡ apresentar a disponibilidade das combinaÃ§Ãµes cadastradas.
+O sistema deverá apresentar a disponibilidade das combinações cadastradas.
 
-### RF08 â€” WhatsApp
+### RF08 — WhatsApp
 
-O sistema deverÃ¡ permitir iniciar contato com o vendedor apÃ³s o preenchimento das opÃ§Ãµes obrigatÃ³rias.
+O sistema deverá permitir iniciar contato com o vendedor após o preenchimento das opções obrigatórias.
 
-### RF09 â€” AutenticaÃ§Ã£o
+### RF09 — Autenticação
 
-O sistema deverÃ¡ permitir autenticaÃ§Ã£o do administrador.
+O sistema deverá permitir autenticação do administrador.
 
-### RF10 â€” Produtos
+### RF10 — Produtos
 
-O administrador deverÃ¡ conseguir cadastrar, editar, ativar, desativar e excluir produtos.
+O administrador deverá conseguir cadastrar, editar, ativar, desativar e excluir produtos.
 
-### RF11 â€” Categorias
+### RF11 — Categorias
 
-O administrador deverÃ¡ conseguir gerenciar categorias.
+O administrador deverá conseguir gerenciar categorias.
 
-### RF12 â€” Atributos
+### RF12 — Atributos
 
-O administrador deverÃ¡ conseguir cadastrar atributos e seus respectivos valores.
+O administrador deverá conseguir cadastrar atributos e seus respectivos valores.
 
-### RF13 â€” Estoque administrativo
+### RF13 — Estoque administrativo
 
-O administrador deverÃ¡ conseguir alterar a quantidade disponÃ­vel de cada variante.
+O administrador deverá conseguir alterar a quantidade disponível de cada variante.
 
-### RF14 â€” Imagens
+### RF14 — Imagens
 
-O administrador deverÃ¡ conseguir adicionar imagens aos produtos.
+O administrador deverá conseguir adicionar imagens aos produtos.
 
-### RF15 â€” ConfiguraÃ§Ãµes
+### RF15 — Configurações
 
-O administrador deverÃ¡ conseguir configurar o nÃºmero de WhatsApp utilizado para contato.
+O administrador deverá conseguir configurar o número de WhatsApp utilizado para contato.
 
 ---
 
-# 19. Requisitos nÃ£o funcionais
+# 19. Requisitos não funcionais
 
-### RNF01 â€” Responsividade
+### RNF01 — Responsividade
 
-A aplicaÃ§Ã£o deverÃ¡ funcionar adequadamente em dispositivos mÃ³veis e desktops.
+A aplicação deverá funcionar adequadamente em dispositivos móveis e desktops.
 
-### RNF02 â€” SeguranÃ§a
+### RNF02 — Segurança
 
-OperaÃ§Ãµes administrativas deverÃ£o exigir autenticaÃ§Ã£o e autorizaÃ§Ã£o.
+Operações administrativas deverão exigir autenticação e autorização.
 
-### RNF03 â€” Usabilidade
+### RNF03 — Usabilidade
 
-A interface deverÃ¡ priorizar simplicidade e facilidade de navegaÃ§Ã£o.
+A interface deverá priorizar simplicidade e facilidade de navegação.
 
-### RNF04 â€” Performance
+### RNF04 — Performance
 
-A aplicaÃ§Ã£o deverÃ¡ otimizar carregamento de imagens e conteÃºdo.
+A aplicação deverá otimizar carregamento de imagens e conteúdo.
 
-### RNF05 â€” Manutenibilidade
+### RNF05 — Manutenibilidade
 
-O cÃ³digo deverÃ¡ seguir a arquitetura modular, MVVM e Clean Architecture.
+O código deverá seguir a arquitetura modular, MVVM e Clean Architecture.
 
-### RNF06 â€” Escalabilidade
+### RNF06 — Escalabilidade
 
-A estrutura deverÃ¡ permitir a inclusÃ£o de novos tipos de produtos e atributos sem alteraÃ§Ãµes estruturais significativas.
+A estrutura deverá permitir a inclusão de novos tipos de produtos e atributos sem alterações estruturais significativas.
 
-### RNF07 â€” Disponibilidade
+### RNF07 — Disponibilidade
 
-Os produtos publicados deverÃ£o estar disponÃ­veis para consulta pÃºblica enquanto estiverem ativos.
+Os produtos publicados deverão estar disponíveis para consulta pública enquanto estiverem ativos.
 
 ---
 
 # 20. Fora do escopo do MVP
 
-Para manter o projeto simples e focado, os seguintes recursos nÃ£o fazem parte do MVP:
+Para manter o projeto simples e focado, os seguintes recursos não fazem parte do MVP:
 
 - Carrinho de compras;
 - Checkout;
 - Pagamento online;
 - PIX integrado;
-- CartÃ£o de crÃ©dito;
+- Cartão de crédito;
 - Sistema de pedidos;
-- HistÃ³rico de pedidos;
-- CÃ¡lculo de frete;
-- IntegraÃ§Ã£o com transportadoras;
+- Histórico de pedidos;
+- Cálculo de frete;
+- Integração com transportadoras;
 - Cupons de desconto;
-- AvaliaÃ§Ãµes;
+- Avaliações;
 - Sistema de favoritos;
 - Cadastro de clientes;
 - Login de clientes;
 - Marketplace;
-- MÃºltiplos vendedores;
+- Múltiplos vendedores;
 - Aplicativo mobile;
-- IntegraÃ§Ã£o com ERP;
+- Integração com ERP;
 - WhatsApp Business API.
 
-O processo de venda serÃ¡ realizado diretamente entre cliente e vendedor atravÃ©s do WhatsApp.
+O processo de venda será realizado diretamente entre cliente e vendedor através do WhatsApp.
 
 ---
 
 # 21. Backlog inicial
 
-## Epic 01 â€” ConfiguraÃ§Ã£o do projeto
+## Epic 01 — Configuração do projeto
 
 - [ ] Criar projeto Next.js
 - [ ] Configurar TypeScript
 - [ ] Configurar estrutura modular
 - [ ] Configurar arquitetura
 - [ ] Configurar lint/format
-- [ ] Configurar variÃ¡veis de ambiente
+- [ ] Configurar variáveis de ambiente
 - [ ] Configurar Supabase
 
-## Epic 02 â€” Banco de dados
+## Epic 02 — Banco de dados
 
 - [ ] Criar tabelas
 - [ ] Criar relacionamentos
-- [ ] Criar Ã­ndices
+- [ ] Criar índices
 - [ ] Criar RLS
 - [ ] Criar policies
 - [ ] Configurar Storage
 
-## Epic 03 â€” AutenticaÃ§Ã£o
+## Epic 03 — Autenticação
 
 - [ ] Criar login administrativo
-- [ ] Implementar sessÃ£o
+- [ ] Implementar sessão
 - [ ] Implementar logout
 - [ ] Proteger rotas administrativas
 
-## Epic 04 â€” Categorias
+## Epic 04 — Categorias
 
 - [ ] Listagem
 - [ ] Cadastro
-- [ ] EdiÃ§Ã£o
-- [ ] AtivaÃ§Ã£o/desativaÃ§Ã£o
+- [ ] Edição
+- [ ] Ativação/desativação
 
-## Epic 05 â€” Produtos
+## Epic 05 — Produtos
 
 - [ ] Listagem administrativa
 - [ ] Cadastro
-- [ ] EdiÃ§Ã£o
-- [ ] AtivaÃ§Ã£o/desativaÃ§Ã£o
-- [ ] ExclusÃ£o
+- [ ] Edição
+- [ ] Ativação/desativação
+- [ ] Exclusão
 - [ ] Upload de imagens
 
-## Epic 06 â€” Atributos e variantes
+## Epic 06 — Atributos e variantes
 
 - [ ] Cadastro de atributos
 - [ ] Cadastro de valores
-- [ ] CriaÃ§Ã£o de variantes
+- [ ] Criação de variantes
 - [ ] Controle de estoque
-- [ ] ValidaÃ§Ã£o de combinaÃ§Ãµes
+- [ ] Validação de combinações
 
-## Epic 07 â€” CatÃ¡logo
+## Epic 07 — Catálogo
 
 - [ ] Layout responsivo
 - [ ] Listagem
 - [ ] Pesquisa
 - [ ] Categorias
 - [ ] Filtros
-- [ ] OrdenaÃ§Ã£o
+- [ ] Ordenação
 
-## Epic 08 â€” Produto
+## Epic 08 — Produto
 
-- [ ] PÃ¡gina de detalhes
+- [ ] Página de detalhes
 - [ ] Galeria de imagens
-- [ ] SeleÃ§Ã£o de atributos
-- [ ] ValidaÃ§Ã£o de disponibilidade
-- [ ] BotÃ£o WhatsApp
+- [ ] Seleção de atributos
+- [ ] Validação de disponibilidade
+- [ ] Botão WhatsApp
 
-## Epic 09 â€” ConfiguraÃ§Ãµes
+## Epic 09 — Configurações
 
-- [ ] NÃºmero WhatsApp
-- [ ] InformaÃ§Ãµes da loja
-- [ ] ConfiguraÃ§Ãµes pÃºblicas
+- [ ] Número WhatsApp
+- [ ] Informações da loja
+- [ ] Configurações públicas
 
-## Epic 10 â€” Deploy
+## Epic 10 — Deploy
 
-- [ ] Configurar ambiente de produÃ§Ã£o
-- [ ] Configurar domÃ­nio
+- [ ] Configurar ambiente de produção
+- [ ] Configurar domínio
 - [ ] Configurar HTTPS
-- [ ] Configurar variÃ¡veis de ambiente
-- [ ] Realizar testes de produÃ§Ã£o
-- [ ] Monitorar aplicaÃ§Ã£o
+- [ ] Configurar variáveis de ambiente
+- [ ] Realizar testes de produção
+- [ ] Monitorar aplicação
 
 ---
 
-# 22. Estrutura de alto nÃ­vel
+# 22. Estrutura de alto nível
 
 ```text
-                         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                         â”‚       Cliente       â”‚
-                         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                    â”‚
-                                    â–¼
-                         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                         â”‚      Next.js        â”‚
-                         â”‚       React         â”‚
-                         â”‚     TypeScript      â”‚
-                         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                    â”‚
-                   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                   â”‚                                 â”‚
-                   â–¼                                 â–¼
-          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-          â”‚ Ãrea PÃºblica    â”‚              â”‚ Ãrea Admin      â”‚
-          â”‚                 â”‚              â”‚                 â”‚
-          â”‚ CatÃ¡logo        â”‚              â”‚ Produtos        â”‚
-          â”‚ Produtos        â”‚              â”‚ Categorias      â”‚
-          â”‚ Filtros         â”‚              â”‚ Estoque         â”‚
-          â”‚ WhatsApp        â”‚              â”‚ ConfiguraÃ§Ãµes   â”‚
-          â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜              â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                   â”‚                                â”‚
-                   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                    â”‚
-                                    â–¼
-                           â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                           â”‚    Supabase     â”‚
-                           â”‚                 â”‚
-                           â”‚ PostgreSQL      â”‚
-                           â”‚ Auth            â”‚
-                           â”‚ Storage         â”‚
-                           â”‚ RLS             â”‚
-                           â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                         ┌─────────────────────┐
+                         │       Cliente       │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │      Next.js        │
+                         │       React         │
+                         │     TypeScript      │
+                         └──────────┬──────────┘
+                                    │
+                   ┌────────────────┴────────────────┐
+                   │                                 │
+                   ▼                                 ▼
+          ┌─────────────────┐              ┌─────────────────┐
+          │ Área Pública    │              │ Área Admin      │
+          │                 │              │                 │
+          │ Catálogo        │              │ Produtos        │
+          │ Produtos        │              │ Categorias      │
+          │ Filtros         │              │ Estoque         │
+          │ WhatsApp        │              │ Configurações   │
+          └────────┬────────┘              └────────┬────────┘
+                   │                                │
+                   └────────────────┬───────────────┘
+                                    │
+                                    ▼
+                           ┌─────────────────┐
+                           │    Supabase     │
+                           │                 │
+                           │ PostgreSQL      │
+                           │ Auth            │
+                           │ Storage         │
+                           │ RLS             │
+                           └─────────────────┘
 ```
 
 ---
 
 # 23. Estrutura de desenvolvimento
 
-O desenvolvimento serÃ¡ realizado de forma incremental, priorizando inicialmente as funcionalidades essenciais para funcionamento do catÃ¡logo.
+O desenvolvimento será realizado de forma incremental, priorizando inicialmente as funcionalidades essenciais para funcionamento do catálogo.
 
-### Fase 1 â€” FundaÃ§Ã£o
+### Fase 1 — Fundação
 
 ```text
 Next.js
@@ -1050,10 +1050,10 @@ TypeScript
 Arquitetura
 Supabase
 Banco
-AutenticaÃ§Ã£o
+Autenticação
 ```
 
-### Fase 2 â€” AdministraÃ§Ã£o
+### Fase 2 — Administração
 
 ```text
 Categorias
@@ -1064,7 +1064,7 @@ Variantes
 Estoque
 ```
 
-### Fase 3 â€” CatÃ¡logo
+### Fase 3 — Catálogo
 
 ```text
 Home
@@ -1074,29 +1074,29 @@ Filtros
 Detalhes
 ```
 
-### Fase 4 â€” IntegraÃ§Ã£o
+### Fase 4 — Integração
 
 ```text
 WhatsApp
-ConfiguraÃ§Ãµes
-ValidaÃ§Ãµes
+Configurações
+Validações
 ```
 
-### Fase 5 â€” Qualidade
+### Fase 5 — Qualidade
 
 ```text
 Testes
 Responsividade
 Performance
-SeguranÃ§a
+Segurança
 Deploy
 ```
 
 ---
 
-# 24. CritÃ©rio de conclusÃ£o do MVP
+# 24. Critério de conclusão do MVP
 
-O MVP serÃ¡ considerado funcional quando:
+O MVP será considerado funcional quando:
 
 - [ ] O administrador conseguir acessar o painel;
 - [ ] O administrador conseguir criar categorias;
@@ -1105,35 +1105,35 @@ O MVP serÃ¡ considerado funcional quando:
 - [ ] O administrador conseguir definir atributos;
 - [ ] O administrador conseguir configurar variantes;
 - [ ] O administrador conseguir controlar estoque;
-- [ ] Produtos ativos aparecerem no catÃ¡logo;
+- [ ] Produtos ativos aparecerem no catálogo;
 - [ ] O cliente conseguir pesquisar produtos;
 - [ ] O cliente conseguir utilizar filtros;
 - [ ] O cliente conseguir visualizar detalhes;
-- [ ] O cliente conseguir selecionar as opÃ§Ãµes disponÃ­veis;
-- [ ] O sistema impedir contato sem selecionar opÃ§Ãµes obrigatÃ³rias;
+- [ ] O cliente conseguir selecionar as opções disponíveis;
+- [ ] O sistema impedir contato sem selecionar opções obrigatórias;
 - [ ] O cliente conseguir abrir o WhatsApp com uma mensagem preenchida;
-- [ ] A aplicaÃ§Ã£o funcionar em desktop e mobile;
-- [ ] As regras de seguranÃ§a do banco estiverem configuradas;
-- [ ] A aplicaÃ§Ã£o estiver disponÃ­vel em ambiente de produÃ§Ã£o.
+- [ ] A aplicação funcionar em desktop e mobile;
+- [ ] As regras de segurança do banco estiverem configuradas;
+- [ ] A aplicação estiver disponível em ambiente de produção.
 
 ---
 
-# 25. ConsideraÃ§Ãµes
+# 25. Considerações
 
-O Ezzion Imports foi planejado como um **catÃ¡logo virtual**, e nÃ£o como uma plataforma completa de comÃ©rcio eletrÃ´nico.
+O Ezzion Imports foi planejado como um **catálogo virtual**, e não como uma plataforma completa de comércio eletrônico.
 
-A principal finalidade do sistema Ã© facilitar a divulgaÃ§Ã£o dos produtos da loja e aproximar o cliente do vendedor.
+A principal finalidade do sistema é facilitar a divulgação dos produtos da loja e aproximar o cliente do vendedor.
 
-A arquitetura foi planejada de forma modular para permitir futuras expansÃµes, como:
+A arquitetura foi planejada de forma modular para permitir futuras expansões, como:
 
 - Carrinho;
 - Pedidos;
 - Pagamentos;
 - Clientes cadastrados;
-- HistÃ³rico de compras;
+- Histórico de compras;
 - Controle de vendas;
-- IntegraÃ§Ãµes externas;
-- AplicaÃ§Ã£o mobile;
+- Integrações externas;
+- Aplicação mobile;
 - Novos tipos de produtos.
 
-Entretanto, essas funcionalidades permanecerÃ£o fora do escopo inicial para garantir que o MVP seja simples, funcional e adequado ao objetivo proposto.
+Entretanto, essas funcionalidades permanecerão fora do escopo inicial para garantir que o MVP seja simples, funcional e adequado ao objetivo proposto.
