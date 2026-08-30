@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 
+import { appRoutes } from "@/core/router/app-routes";
 import { createSignInAdminUseCase } from "@/core/di/authentication-browser";
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
-import { authenticationRoutes } from "@/features/authentication/router/authentication-routes";
 import { AdminLoginForm } from "@/features/authentication/presentation/components/admin-login-form";
 import { useAdminLoginViewModel } from "@/features/authentication/presentation/viewmodels/use-admin-login-viewmodel";
 
@@ -22,7 +22,7 @@ export function AdminLoginPage({ supabaseConfig }: AdminLoginPageProps) {
     }
 
     actions.clearEffect();
-    window.location.assign(authenticationRoutes.dashboard);
+    window.location.assign(appRoutes.adminDashboard);
   }, [actions, state.effect]);
 
   return (

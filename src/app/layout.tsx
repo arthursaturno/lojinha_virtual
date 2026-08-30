@@ -16,6 +16,11 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: "Ezzion Imports",
   description: "Catalogo virtual da Ezzion Imports",
+  icons: {
+    icon: "/icon.jpg",
+    shortcut: "/icon.jpg",
+    apple: "/icon.jpg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

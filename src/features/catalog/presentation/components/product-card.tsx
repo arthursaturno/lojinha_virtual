@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { formatCurrency } from "@/core/utils/format/currency";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 
@@ -13,7 +14,10 @@ type ProductCardProps = {
 export function ProductCard({ product, onOpen }: ProductCardProps) {
   return (
     <button className="bg-white text-left" onClick={() => onOpen(product)}>
-      <div className="relative h-[205px] overflow-hidden bg-[#eee] md:h-[236px]">
+      <div
+        className="relative overflow-hidden bg-[#eee]"
+        style={{ aspectRatio: catalogProductImageAspectRatio }}
+      >
         <Image
           src={product.images[0]}
           alt={product.name}
