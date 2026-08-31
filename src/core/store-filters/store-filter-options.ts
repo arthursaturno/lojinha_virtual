@@ -4,7 +4,7 @@ export type StoreFilterOptions = Record<StoreFilterType, string[]>;
 
 export const predefinedStoreFilterOptions: StoreFilterOptions = {
   category: ["Camisetas", "Camisas", "Regatas", "Polos", "Blusas", "Moletons", "Calcas", "Bermudas", "Shorts", "Jaquetas", "Casacos", "Conjuntos", "Vestidos", "Saias", "Tenis", "Sapatos", "Sandalias", "Bolsas", "Acessorios"],
-  size: ["PP", "P", "M", "G", "GG", "XG", "UN"],
+  size: ["PP", "P", "M", "G", "GG", "XG", "UN", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45"],
   color: ["Preto", "Branco", "Cinza", "Verde", "Azul", "Bege", "Marrom", "Rosa", "Amarelo", "Laranja", "Vinho", "Vermelho"],
   model: ["Oversized", "Street", "Utility", "Basico", "Slim", "Regular", "Linho", "Social", "Casual", "Esportivo", "Cargo"],
 };

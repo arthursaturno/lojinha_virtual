@@ -70,7 +70,7 @@ export function ProductDrawer({
       `Total: ${formatCurrency(orderTotal)}`,
       `Link: ${window.location.href}`,
       "",
-      "Gostaria de saber mais informacoes.",
+      "Gostaria de saber mais informacões.",
     ].join("\n");
 
     window.open(

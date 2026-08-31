@@ -604,7 +604,6 @@ export function AdministrationProductDrawer({
                       <input
                         type="file"
                         accept="image/*"
-                        capture="environment"
                         className="hidden"
                         onChange={(event) =>
                           handleImageSelection(index as 0 | 1 | 2, event.target.files?.[0])
