@@ -5,6 +5,7 @@ const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : undefined
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  allowedDevOrigins: ["192.168.1.68"],
   images: {
     remotePatterns: supabaseHostname
       ? [

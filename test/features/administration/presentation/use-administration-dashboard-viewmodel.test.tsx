@@ -1,5 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+import { Result } from "@/core/result/result";
 
 import type { AdministrationProduct } from "@/features/administration/domain/entities/administration-product";
 import { useAdministrationDashboardViewModel } from "@/features/administration/presentation/viewmodels/use-administration-dashboard-viewmodel";
@@ -198,6 +200,33 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.state.products[0].description).toBe("Descricao nova");
     expect(result.current.state.products[0].category).toBe("Camisas");
     expect(result.current.state.feedbackMessage).toBe("Produto criado no MVP local.");
+  });
+
+  it("ignores a second save while the product creation request is pending", async () => {
+    let finishCreate: ((result: Result<AdministrationProduct>) => void) | undefined;
+    const create = vi.fn(
+      () => new Promise<Result<AdministrationProduct>>((resolve) => {
+        finishCreate = resolve;
+      }),
+    );
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(products, {
+      create: { call: create },
+      update: { call: vi.fn() },
+      delete: { call: vi.fn() },
+      deleteImages: { call: vi.fn(() => Promise.resolve(Result.success(undefined))) },
+      uploadImage: { call: vi.fn() },
+    }));
+
+    act(() => result.current.actions.openNewProductDrawer());
+
+    await act(async () => {
+      const firstSave = result.current.actions.saveSelections();
+      const secondSave = result.current.actions.saveSelections();
+      finishCreate?.(Result.success(products[0]));
+      await Promise.all([firstSave, secondSave]);
+    });
+
+    expect(create).toHaveBeenCalledTimes(1);
   });
 
   it("distributes the exact selected stock quantity between variants", () => {

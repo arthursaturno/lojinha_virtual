@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { formatCurrencyInput } from "@/core/utils/format/currency-input";
 import { distributeStockQuantity } from "@/core/utils/numbers/distribute-stock-quantity";
@@ -102,11 +102,11 @@ function createProductFromDraft(
 }
 
 type AdministrationProductActions = {
-  create: CreateAdministrationProductUseCase;
-  update: UpdateAdministrationProductUseCase;
-  delete: DeleteAdministrationProductUseCase;
-  deleteImages: DeleteAdministrationProductImagesUseCase;
-  uploadImage: UploadAdministrationProductImageUseCase;
+  create: Pick<CreateAdministrationProductUseCase, "call">;
+  update: Pick<UpdateAdministrationProductUseCase, "call">;
+  delete: Pick<DeleteAdministrationProductUseCase, "call">;
+  deleteImages: Pick<DeleteAdministrationProductImagesUseCase, "call">;
+  uploadImage: Pick<UploadAdministrationProductImageUseCase, "call">;
 };
 
 function isStoredProductImage(imageUrl: string): boolean {
@@ -122,6 +122,7 @@ export function useAdministrationDashboardViewModel(
     status: "success",
     products: initialProducts,
   }));
+  const isSavingRef = useRef(false);
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = state.query.trim().toLowerCase();
@@ -384,48 +385,58 @@ export function useAdministrationDashboardViewModel(
   }
 
   async function saveSelections() {
-    if (productActions) {
-      const product = createProductFromDraft(state.draft, state.selectedProductId);
-      const imageUrlsToDelete = state.pendingImageDeletionUrls;
-      setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
-      const result = await (state.editorMode === "create" ? productActions.create : productActions.update).call(product);
-
-      if (!result.ok) {
-        setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
-        return;
-      }
-
-      const deleteImagesResult = await productActions.deleteImages.call(imageUrlsToDelete);
-
-      setState((current) => {
-        const nextProducts = current.editorMode === "create"
-          ? [result.data, ...current.products]
-          : current.products.map((item) => (item.id === result.data.id ? result.data : item));
-        return { ...current, products: nextProducts, currentPage: current.editorMode === "create" ? 1 : current.currentPage, selectedProductId: result.data.id, editorMode: "edit", saveStatus: deleteImagesResult.ok ? "saved" : "failure", feedbackMessage: deleteImagesResult.ok ? (current.editorMode === "create" ? "Produto criado com sucesso." : "Produto atualizado com sucesso.") : deleteImagesResult.failure.message, pendingImageDeletionUrls: deleteImagesResult.ok ? [] : current.pendingImageDeletionUrls };
-      });
+    if (isSavingRef.current) {
       return;
     }
 
-    setState((current) => {
-      const nextProduct = createProductFromDraft(current.draft, current.selectedProductId);
-      const nextProducts =
-        current.editorMode === "create"
-          ? [nextProduct, ...current.products]
-          : current.products.map((product) => (product.id === nextProduct.id ? nextProduct : product));
+    isSavingRef.current = true;
 
-      return {
-        ...current,
-        products: nextProducts,
-        currentPage: current.editorMode === "create" ? 1 : current.currentPage,
-        selectedProductId: nextProduct.id,
-        editorMode: "edit",
-        saveStatus: "saved",
-        feedbackMessage:
+    try {
+      if (productActions) {
+        const product = createProductFromDraft(state.draft, state.selectedProductId);
+        const imageUrlsToDelete = state.pendingImageDeletionUrls;
+        setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
+        const result = await (state.editorMode === "create" ? productActions.create : productActions.update).call(product);
+
+        if (!result.ok) {
+          setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
+          return;
+        }
+
+        const deleteImagesResult = await productActions.deleteImages.call(imageUrlsToDelete);
+
+        setState((current) => {
+          const nextProducts = current.editorMode === "create"
+            ? [result.data, ...current.products]
+            : current.products.map((item) => (item.id === result.data.id ? result.data : item));
+          return { ...current, products: nextProducts, currentPage: current.editorMode === "create" ? 1 : current.currentPage, selectedProductId: result.data.id, editorMode: "edit", saveStatus: deleteImagesResult.ok ? "saved" : "failure", feedbackMessage: deleteImagesResult.ok ? (current.editorMode === "create" ? "Produto criado com sucesso." : "Produto atualizado com sucesso.") : deleteImagesResult.failure.message, pendingImageDeletionUrls: deleteImagesResult.ok ? [] : current.pendingImageDeletionUrls };
+        });
+        return;
+      }
+
+      setState((current) => {
+        const nextProduct = createProductFromDraft(current.draft, current.selectedProductId);
+        const nextProducts =
           current.editorMode === "create"
-            ? "Produto criado no MVP local."
-            : "Produto atualizado no MVP local.",
-      };
-    });
+            ? [nextProduct, ...current.products]
+            : current.products.map((product) => (product.id === nextProduct.id ? nextProduct : product));
+
+        return {
+          ...current,
+          products: nextProducts,
+          currentPage: current.editorMode === "create" ? 1 : current.currentPage,
+          selectedProductId: nextProduct.id,
+          editorMode: "edit",
+          saveStatus: "saved",
+          feedbackMessage:
+            current.editorMode === "create"
+              ? "Produto criado no MVP local."
+              : "Produto atualizado no MVP local.",
+        };
+      });
+    } finally {
+      isSavingRef.current = false;
+    }
   }
 
   async function deleteSelectedProduct() {

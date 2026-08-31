@@ -663,11 +663,12 @@ export function AdministrationProductDrawer({
           </button>
           <button
             type="button"
-            className="h-11 bg-[var(--color-lime)] px-5 font-black text-black"
+            className="h-11 bg-[var(--color-lime)] px-5 font-black text-black disabled:cursor-not-allowed disabled:opacity-60"
             style={{ fontSize: administrationTypography.action }}
             onClick={onSave}
+            disabled={saveStatus === "loading"}
           >
-            {saveStatus === "saved" ? "SALVO" : "SALVAR PRODUTO"}
+            {saveStatus === "loading" ? "SALVANDO..." : saveStatus === "saved" ? "SALVO" : "SALVAR PRODUTO"}
           </button>
           </div>
         </div>
