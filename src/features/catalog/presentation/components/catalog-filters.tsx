@@ -1,6 +1,10 @@
 "use client";
 
 import { FilterCheckbox } from "@/features/catalog/presentation/components/filter-checkbox";
+import {
+  catalogColorSwatchClassByName,
+  catalogColorSwatchFallbackClass,
+} from "@/core/theme/catalog-color-swatches";
 import { catalogTypography } from "@/core/theme/tokens";
 
 type CatalogFiltersProps = {
@@ -19,21 +23,6 @@ type CatalogFiltersProps = {
   onColorToggle(color: string): void;
   onModelToggle(model: string): void;
   onClear(): void;
-};
-
-const swatchClassByColor: Record<string, string> = {
-  Preto: "bg-[#090909]",
-  Branco: "border border-[#aaa] bg-white",
-  Cinza: "bg-[#b9b9b9]",
-  Verde: "bg-[#4c632e]",
-  Azul: "bg-[#2563eb]",
-  Bege: "bg-[#d7c6a5]",
-  Marrom: "bg-[#75452c]",
-  Rosa: "bg-[#ec7ba7]",
-  Amarelo: "bg-[#f4cf2f]",
-  Laranja: "bg-[#ea7a23]",
-  Vinho: "bg-[#7f1d36]",
-  Vermelho: "bg-[#d32f2f]",
 };
 
 export function CatalogFilters({
@@ -99,7 +88,7 @@ export function CatalogFilters({
             key={color}
             aria-label={color}
             onClick={() => onColorToggle(color)}
-            className={`size-[17px] rounded-full ${swatchClassByColor[color] ?? "bg-[#e7e7e7]"} ${
+            className={`size-[17px] rounded-full ${catalogColorSwatchClassByName[color] ?? catalogColorSwatchFallbackClass} ${
               colorFilters.includes(color) ? "outline outline-2 outline-[var(--color-lime)] outline-offset-2" : ""
             }`}
           />
