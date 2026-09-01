@@ -6,7 +6,11 @@ import { FiCrop, FiImage, FiMinus, FiPlus, FiTrash2, FiUpload, FiX } from "react
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
-import { createProductImageUpload } from "@/core/utils/images/create-product-image-upload";
+import {
+  createProductImageUpload,
+  getProductImageCropOffsetPercentage,
+  productImageCropOffsetLimit,
+} from "@/core/utils/images/create-product-image-upload";
 import type { AdministrationProductImageUpload } from "@/features/administration/domain/entities/administration-product-image-upload";
 import {
   administrationCategoryOptions,
@@ -563,13 +567,13 @@ export function AdministrationProductDrawer({
                       src={imageUrl}
                       alt={`Foto ${index + 1}`}
                       fill
-                      sizes="132px"
+                      sizes="(max-width: 768px) calc(100vw - 64px), 132px"
                       className="object-cover"
                       style={{
                         objectPosition: `calc(50% + ${draft.imageCrops[index].offsetX}px) calc(50% + ${draft.imageCrops[index].offsetY}px)`,
                         transform: `scale(${draft.imageCrops[index].zoom})`,
                       }}
-                      unoptimized
+                      unoptimized={imageUrl.startsWith("blob:")}
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[var(--color-muted)]">
@@ -721,8 +725,8 @@ export function AdministrationProductDrawer({
                   sizes="(max-width: 768px) calc(100vw - 32px), 720px"
                   className="object-cover"
                   style={{
-                    objectPosition: `calc(50% + ${cropModalState.crop.offsetX}px) calc(50% + ${cropModalState.crop.offsetY}px)`,
-                    transform: `scale(${cropModalState.crop.zoom})`,
+                    transform: `translate(${getProductImageCropOffsetPercentage(cropModalState.crop.offsetX)}%, ${getProductImageCropOffsetPercentage(cropModalState.crop.offsetY)}%) scale(${cropModalState.crop.zoom})`,
+                    transformOrigin: "center",
                   }}
                   unoptimized
                 />
@@ -760,8 +764,8 @@ export function AdministrationProductDrawer({
                     </span>
                     <input
                       type="range"
-                      min="-80"
-                      max="80"
+                      min={-productImageCropOffsetLimit}
+                      max={productImageCropOffsetLimit}
                       step="2"
                       value={cropModalState.crop.offsetX}
                       onChange={(event) =>
@@ -780,8 +784,8 @@ export function AdministrationProductDrawer({
                     </span>
                     <input
                       type="range"
-                      min="-80"
-                      max="80"
+                      min={-productImageCropOffsetLimit}
+                      max={productImageCropOffsetLimit}
                       step="2"
                       value={cropModalState.crop.offsetY}
                       onChange={(event) =>

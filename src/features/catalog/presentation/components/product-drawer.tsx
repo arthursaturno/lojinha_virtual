@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { FiChevronLeft, FiChevronRight, FiHeadphones, FiMaximize2, FiTruck, FiX } from "react-icons/fi";
 
+import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { catalogTypography } from "@/core/theme/tokens";
 import { formatCurrency } from "@/core/utils/format/currency";
 import type {
@@ -92,8 +93,19 @@ export function ProductDrawer({
           </button>
         </div>
 
-        <div className="relative mt-[10px] h-[270px] bg-[#eee]">
-          {currentImage ? <Image src={currentImage} alt={product.name} fill sizes="420px" className="object-cover" /> : null}
+        <div
+          className="relative mt-[10px] w-full bg-[#eee]"
+          style={{ aspectRatio: catalogProductImageAspectRatio }}
+        >
+          {currentImage ? (
+            <Image
+              src={currentImage}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) calc(100vw - 28px), 370px"
+              className="object-cover"
+            />
+          ) : null}
           <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 font-extrabold text-white" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
             {imageIndex + 1}/{product.images.length}
           </div>

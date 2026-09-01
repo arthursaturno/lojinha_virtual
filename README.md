@@ -10,6 +10,41 @@ O cliente poderá visualizar os produtos disponibilizados pelo administrador, ut
 
 ---
 
+## Funcionalidades implementadas
+
+- Catalogo publico responsivo com busca, categorias, filtros, paginacao e produtos ativos;
+- Drawer de produto com galeria, ampliacao de foto, descricao, variacoes, quantidade e contato pelo WhatsApp;
+- Painel administrativo com autenticacao Supabase, criacao, edicao, ativacao e exclusao de produtos;
+- Upload, recorte e remocao de imagens de produto no Supabase Storage;
+- Configuracoes de nome da loja e WhatsApp, alem dos filtros exibidos no catalogo;
+- Encerramento de sessao administrativa com confirmacao para evitar saidas acidentais.
+
+## Telas validadas
+
+As capturas abaixo sao geradas pelo fluxo de QA local com `npm run capture:screenshots`.
+
+### Catalogo em desktop
+
+![Catalogo da loja em desktop](docs/screenshots/catalog-desktop.png)
+
+### Detalhe do produto em desktop
+
+![Drawer de produto em desktop](docs/screenshots/product-drawer-desktop.png)
+
+### Catalogo em mobile
+
+![Catalogo da loja em mobile](docs/screenshots/catalog-mobile.png)
+
+### Detalhe do produto em mobile
+
+![Drawer de produto em mobile](docs/screenshots/product-drawer-mobile.png)
+
+### Login administrativo
+
+![Login administrativo](docs/screenshots/admin-login-desktop.png)
+
+---
+
 ## 1. Objetivo do projeto
 
 O Ezzion Imports será uma plataforma de catálogo digital para divulgação dos produtos comercializados pela loja.

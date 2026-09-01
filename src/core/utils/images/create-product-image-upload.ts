@@ -8,6 +8,12 @@ type ProductImageCrop = {
 
 const productImageRatio = 4 / 5;
 const maximumSourceBytes = 15 * 1024 * 1024;
+export const productImageCropOffsetLimit = 80;
+export const productImageCropOffsetPercentage = 12;
+
+export function getProductImageCropOffsetPercentage(offset: number): number {
+  return (offset / productImageCropOffsetLimit) * productImageCropOffsetPercentage;
+}
 
 function canvasToWebp(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -47,8 +53,8 @@ async function renderProductImage(
   const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight) * crop.zoom;
   const renderedWidth = image.naturalWidth * scale;
   const renderedHeight = image.naturalHeight * scale;
-  const offsetX = (crop.offsetX / 80) * width * 0.12;
-  const offsetY = (crop.offsetY / 80) * height * 0.12;
+  const offsetX = (getProductImageCropOffsetPercentage(crop.offsetX) / 100) * width;
+  const offsetY = (getProductImageCropOffsetPercentage(crop.offsetY) / 100) * height;
 
   context.drawImage(
     image,

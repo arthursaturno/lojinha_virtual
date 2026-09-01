@@ -13,9 +13,7 @@ import type {
 import { initialCatalogViewState } from "@/features/catalog/presentation/viewmodels/catalog-view-state";
 
 const allCategory = "Todos";
-const mainCategory = "Roupas";
 const pageSize = 10;
-const catalogCategories = [mainCategory, "Camisetas", "Jaquetas", "Tenis", "Acessorios", "Bolsas", allCategory];
 
 function toggleListValue(values: string[], value: string): string[] {
   return values.includes(value)
@@ -35,8 +33,12 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
   const [maxPrice, setMaxPrice] = useState(450);
 
   const categories = useMemo(
-    () => [mainCategory, ...(configuredFilters?.category ?? catalogCategories.filter((item) => item !== mainCategory && item !== allCategory)), allCategory],
-    [configuredFilters],
+    () => {
+      const configuredCategories = configuredFilters?.category ?? initialProducts.map((product) => product.category);
+
+      return [...new Set([...configuredCategories.filter(Boolean), allCategory])];
+    },
+    [configuredFilters, initialProducts],
   );
 
   const availableSizes = useMemo(
@@ -59,8 +61,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
 
     const filtered = state.products.filter((product) => {
       const matchesQuery = product.name.toLowerCase().includes(normalizedQuery);
-      const matchesCategory =
-        state.category === allCategory || state.category === mainCategory || product.category === state.category;
+      const matchesCategory = state.category === allCategory || product.category === state.category;
       const matchesSize =
         sizeFilters.length === 0 ||
         product.variants.some((variant) => sizeFilters.includes(variant.size) && variant.stockQuantity > 0);
@@ -89,7 +90,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
     () =>
       categories.reduce<Record<string, number>>((counts, category) => {
         counts[category] =
-          category === allCategory || category === mainCategory
+          category === allCategory
             ? initialProducts.length
             : initialProducts.filter((product) => product.category === category).length;
 
@@ -223,7 +224,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
     setState((current) => ({
       ...current,
       query: "",
-      category: "Roupas",
+      category: allCategory,
       sort: "recent",
       currentPage: 1,
     }));

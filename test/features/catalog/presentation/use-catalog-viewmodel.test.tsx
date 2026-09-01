@@ -66,11 +66,18 @@ describe("useCatalogViewModel", () => {
   it("filters products by query", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 
-    act(() => result.current.actions.updateCategory("Todos"));
     act(() => result.current.actions.updateQuery("bolsa"));
 
     expect(result.current.filteredProducts).toHaveLength(1);
     expect(result.current.filteredProducts[0].name).toBe("Bolsa Utility Cross");
+  });
+
+  it("uses real product categories and starts with all products selected", () => {
+    const { result } = renderHook(() => useCatalogViewModel(products));
+
+    expect(result.current.state.category).toBe("Todos");
+    expect(result.current.categories).toEqual(["Camisetas", "Acessorios", "Todos"]);
+    expect(result.current.filteredProducts).toHaveLength(2);
   });
 
   it("enables checkout contact only after required variation selection", () => {

@@ -27,7 +27,7 @@ export const initialCatalogViewState: CatalogViewState = {
   status: "initial",
   products: [],
   query: "",
-  category: "Roupas",
+  category: "Todos",
   selectedProduct: null,
   selection: {
     size: "",

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:supabase": "node scripts/test-supabase-env.mjs"
+    "test:supabase": "node scripts/test-supabase-env.mjs",
+    "capture:screenshots": "node scripts/capture-readme-screenshots.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
