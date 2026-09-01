@@ -13,11 +13,23 @@ O cliente poderá visualizar os produtos disponibilizados pelo administrador, ut
 ## Funcionalidades implementadas
 
 - Catalogo publico responsivo com busca, categorias, filtros, paginacao e produtos ativos;
-- Drawer de produto com galeria, ampliacao de foto, descricao, variacoes, quantidade e contato pelo WhatsApp;
+- Drawer de produto com galeria, ampliacao de foto, descricao, variacoes, quantidade e inclusao no carrinho;
+- Carrinho persistido no navegador, com ajuste de quantidade, remocao de itens, cupom e fechamento pelo WhatsApp;
+- Area de promocoes para campanhas de foto, desconto por produto, leve X/pague Y, cupons e frete gratis;
+- Popup de campanha exibido uma vez por sessao e precos promocionais destacados na vitrine;
 - Painel administrativo com autenticacao Supabase, criacao, edicao, ativacao e exclusao de produtos;
 - Upload, recorte e remocao de imagens de produto no Supabase Storage;
 - Configuracoes de nome da loja e WhatsApp, alem dos filtros exibidos no catalogo;
 - Encerramento de sessao administrativa com confirmacao para evitar saidas acidentais.
+
+### Promocoes no Supabase
+
+Antes de usar a nova aba administrativa, execute no SQL Editor as migrations locais abaixo, nesta ordem:
+
+1. `supabase/migrations/20260901090000_create_promotions.sql`
+2. `supabase/migrations/20260901100000_validate_cart_promotions.sql`
+
+Elas criam as tabelas, RLS, bucket `promotion-images` e a RPC que recalcula ofertas e cupons a partir das variantes reais do banco.
 
 ## Telas validadas
 
@@ -38,6 +50,10 @@ As capturas abaixo sao geradas pelo fluxo de QA local com `npm run capture:scree
 ### Detalhe do produto em mobile
 
 ![Drawer de produto em mobile](docs/screenshots/product-drawer-mobile.png)
+
+### Carrinho em mobile
+
+![Carrinho da loja em mobile](docs/screenshots/cart-mobile.png)
 
 ### Login administrativo
 
@@ -78,10 +94,10 @@ Seleciona um produto
 Seleciona as opções disponíveis
    │
    ▼
-Verifica disponibilidade
+Adiciona ao carrinho
    │
    ▼
-Falar com vendedor
+Aplica cupom e revisa o total
    │
    ▼
 WhatsApp

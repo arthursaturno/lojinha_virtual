@@ -4,6 +4,7 @@ export type ProductVariant = {
   color: string;
   model: string;
   price: number;
+  originalPrice?: number;
   stockQuantity: number;
   isActive: boolean;
 };
@@ -16,8 +17,10 @@ export type CatalogProduct = {
   category: string;
   color: string;
   price: number;
+  originalPrice?: number;
   images: string[];
   stockQuantity: number;
   badge?: string;
+  promotionLabel?: string;
   variants: ProductVariant[];
 };
