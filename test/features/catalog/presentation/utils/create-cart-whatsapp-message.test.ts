@@ -31,10 +31,10 @@ describe("createCartWhatsAppMessage", () => {
       storeUrl: "https://ezzionimports.com",
     });
 
-    expect(message).toContain("2 x R$ 100,00");
+    expect(message).toMatch(/2 x R\$\s100,00/);
     expect(message).toContain("Cupom aplicado: BEMVINDO");
-    expect(message).toContain("Descontos: - R$ 30,00");
-    expect(message).toContain("Total estimado: R$ 170,00");
+    expect(message).toMatch(/Descontos: - R\$\s30,00/);
+    expect(message).toMatch(/Total estimado: R\$\s170,00/);
   });
 
   it("normalizes the WhatsApp phone number", () => {
