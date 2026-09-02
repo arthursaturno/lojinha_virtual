@@ -1,5 +1,30 @@
 ﻿# Ezzion Imports
-
+Falta este conjunto para fechar promoções de ponta a ponta:
+1. Evoluir o banco
+   - Marcas estruturadas (brands e products.brand_id).
+   - Alvos de campanha por produto, categoria ou marca.
+   - Título e descrição visíveis para cada benefício.
+   - Condições como valor mínimo, quantidade mínima e período ativo.
+2. Refazer a validação no Supabase
+   - Trocar validação por código por validação via promotion_id.
+   - Criar RPC para listar benefícios aplicáveis ao carrinho.
+   - Criar RPC para calcular o benefício selecionado usando preços e estoque reais.
+   - Suportar “leve 3 camisas da marca X e pague 2”, inclusive combinando produtos elegíveis diferentes.
+3. Ajustar o admin
+   - Remover campo de código de cupom.
+   - Permitir definir título, descrição, tipo, alvo, condição e benefício.
+   - Selecionar marca, categoria ou produtos da campanha.
+   - Configurar frete grátis com valor mínimo.
+4. Ajustar o carrinho do cliente
+   - Remover campo de texto de cupom.
+   - Exibir benefícios disponíveis como cards selecionáveis.
+   - Informar quando a pessoa ainda não atende à condição.
+   - Permitir um benefício de carrinho por vez, mantendo ofertas de produto automáticas.
+   - Enviar o benefício e valores corretos no WhatsApp.
+5. Fechamento
+   - Atualizar README e docs/features/feature-promotions.md.
+   - Testar regras de desconto, frete, campanhas expiradas, carrinho misto e tentativa de manipular valores pelo navegador.
+A base de promoções, popup, descontos por produto, carrinho e validação server-side já existe. A parte que falta é transformar o cupom digitável em benefício selecionável e tornar as campanhas elegíveis por marca/categoria.
 Catálogo virtual responsivo para a **Ezzion Imports**, desenvolvido para permitir que clientes consultem os produtos disponíveis, visualizem suas características e entrem em contato diretamente com o vendedor por meio do WhatsApp.
 
 O projeto tem como objetivo disponibilizar uma experiência simples de consulta de produtos, sem implementar um processo tradicional de comércio eletrônico.
@@ -14,7 +39,7 @@ O cliente poderá visualizar os produtos disponibilizados pelo administrador, ut
 
 - Catalogo publico responsivo com busca, categorias, filtros, paginacao e produtos ativos;
 - Drawer de produto com galeria, ampliacao de foto, descricao, variacoes, quantidade e inclusao no carrinho;
-- Carrinho persistido no navegador, com ajuste de quantidade, remocao de itens, cupom e fechamento pelo WhatsApp;
+- Carrinho persistido no navegador, com ajuste de quantidade, remocao de itens, validacao de campanhas e fechamento pelo WhatsApp;
 - Area de promocoes para campanhas de foto, desconto por produto, leve X/pague Y, cupons e frete gratis;
 - Popup de campanha exibido uma vez por sessao e precos promocionais destacados na vitrine;
 - Painel administrativo com autenticacao Supabase, criacao, edicao, ativacao e exclusao de produtos;
@@ -30,6 +55,30 @@ Antes de usar a nova aba administrativa, execute no SQL Editor as migrations loc
 2. `supabase/migrations/20260901100000_validate_cart_promotions.sql`
 
 Elas criam as tabelas, RLS, bucket `promotion-images` e a RPC que recalcula ofertas e cupons a partir das variantes reais do banco.
+
+### Evolucao planejada: beneficios selecionaveis no carrinho
+
+O campo para digitar cupom sera substituido por beneficios exibidos e selecionados pelo cliente no carrinho. O administrador criara cada beneficio na aba de promocoes, com titulo, descricao, condicao e periodo de vigencia.
+
+Exemplos de beneficios:
+
+- `10% OFF acima de R$ 150`;
+- `Frete gratis acima de R$ 200`;
+- `Leve 3 camisas e pague 2`;
+- `R$ 20 OFF em bermudas`.
+
+As ofertas diretas do produto e regras `Leve X, pague Y` permanecerao automaticas. O cliente podera selecionar um beneficio de carrinho por vez, com a condicao e o desconto calculados novamente pelo Supabase antes do envio ao WhatsApp.
+
+#### Estado da execucao
+
+- Concluido: painel administrativo de promocoes, popup com imagem, descontos por produto, regra `Leve X/pague Y` para o mesmo produto, frete gratis informativo, carrinho local e validacao server-side dos valores.
+- Pendente: substituir o cupom digitavel por cards selecionaveis no carrinho.
+- Pendente: adicionar titulo e descricao publicos para cada beneficio.
+- Pendente: permitir campanhas por produto, categoria e marca. Atualmente a regra de quantidade aponta apenas para um produto.
+- Pendente: estruturar marcas com `brands` e `products.brand_id` para suportar regras como `leve 3 camisas da marca X e pague 2`, inclusive combinando produtos elegiveis diferentes.
+- Pendente: criar RPCs para listar beneficios aplicaveis ao carrinho e calcular o beneficio selecionado por `promotion_id`, sem confiar em valores enviados pelo navegador.
+
+O resumo enviado ao WhatsApp devera informar itens, quantidades, beneficio selecionado, subtotal, descontos, condicao de frete e total estimado.
 
 ## Telas validadas
 
@@ -97,7 +146,7 @@ Seleciona as opções disponíveis
 Adiciona ao carrinho
    │
    ▼
-Aplica cupom e revisa o total
+Seleciona um beneficio disponivel e revisa o total
    │
    ▼
 WhatsApp
