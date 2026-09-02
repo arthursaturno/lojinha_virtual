@@ -80,6 +80,25 @@ describe("useCatalogViewModel", () => {
     expect(result.current.filteredProducts).toHaveLength(2);
   });
 
+  it("shows Camisas, Shorts and Bermudas before other products when sorting by recent", () => {
+    const prioritizedProducts = [
+      { ...products[1], id: "accessories", category: "Acessorios" },
+      { ...products[1], id: "bermuda", category: "Bermudas" },
+      { ...products[1], id: "camisa", category: "Camisa" },
+      { ...products[1], id: "camisa-time", name: "Camisa polo de time Flamengo", category: "Camisa" },
+      { ...products[1], id: "shorts", category: "Shorts" },
+    ];
+    const { result } = renderHook(() => useCatalogViewModel(prioritizedProducts));
+
+    expect(result.current.filteredProducts.map((product) => product.category)).toEqual([
+      "Camisa",
+      "Shorts",
+      "Bermudas",
+      "Acessorios",
+      "Camisa",
+    ]);
+  });
+
   it("enables checkout contact only after required variation selection", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 

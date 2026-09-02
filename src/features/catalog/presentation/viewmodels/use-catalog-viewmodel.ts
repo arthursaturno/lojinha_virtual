@@ -4,6 +4,10 @@ import { useMemo, useState } from "react";
 
 import { formatCurrency } from "@/core/utils/format/currency";
 import type { StoreFilterOptions } from "@/core/store-filters/store-filter-options";
+import {
+  getStorefrontProductPriority,
+  prioritizeStorefrontCategories,
+} from "@/core/store-filters/store-filter-options";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import type {
   CatalogSortOption,
@@ -36,7 +40,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
     () => {
       const configuredCategories = configuredFilters?.category ?? initialProducts.map((product) => product.category);
 
-      return [...new Set([...configuredCategories.filter(Boolean), allCategory])];
+      return prioritizeStorefrontCategories([...new Set([...configuredCategories.filter(Boolean), allCategory])]);
     },
     [configuredFilters, initialProducts],
   );
@@ -83,7 +87,9 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
       return [...filtered].sort((first, second) => second.price - first.price);
     }
 
-    return filtered;
+    return [...filtered].sort(
+      (first, second) => getStorefrontProductPriority(first.category, first.name) - getStorefrontProductPriority(second.category, second.name),
+    );
   }, [colorFilters, maxPrice, modelFilters, sizeFilters, state]);
 
   const categoryCount = useMemo(

@@ -1,11 +1,11 @@
 import { createCatalogProductsUseCaseWithClient } from "@/core/di/catalog";
 import { createGetStoreSettingsUseCaseWithClient } from "@/core/di/store-settings";
-import { createSupabaseServerClient } from "@/core/network/supabase/server-client";
+import { createSupabasePublicServerClient } from "@/core/network/supabase/server-client";
 import { createDefaultStoreFilterOptions, type StoreFilterOptions, type StoreFilterType } from "@/core/store-filters/store-filter-options";
 import { CatalogExperience } from "@/features/catalog/presentation/pages/catalog-experience";
 
 export async function CatalogPage() {
-  const supabaseClient = await createSupabaseServerClient();
+  const supabaseClient = createSupabasePublicServerClient();
   const [productsResult, storeSettingsResult, filterOptionsResult] = await Promise.all([
     createCatalogProductsUseCaseWithClient(supabaseClient).call(),
     createGetStoreSettingsUseCaseWithClient(supabaseClient).call(),
