@@ -85,7 +85,11 @@ O editor administrativo prepara a foto no navegador somente depois da confirmaca
 
 - detalhe em WebP, 1200 x 1500, qualidade 82%;
 - arquivo original limitado a 15 MB;
+- cada produto aceita ate cinco fotos, ordenadas pela posicao definida no painel;
+- a foto recortada permanece como pre-visualizacao local enquanto o editor estiver aberto;
+- o upload ao Supabase Storage ocorre somente ao clicar em salvar o produto, evitando arquivos orfaos quando o cadastro e fechado ou cancelado;
 - a versao de detalhe e enviada ao bucket publico `product-images` em caminho separado pelo usuario autenticado;
+- novos produtos usam a pasta `{owner-id}/products/{product-id}/`, sem mover as imagens legadas em `{owner-id}/details/`;
 - a tabela atual armazena uma URL por foto, usada tambem na listagem;
 - miniaturas dedicadas permanecem uma evolucao futura, quando a tabela for expandida de forma planejada.
 
@@ -100,6 +104,8 @@ O editor administrativo prepara a foto no navegador somente depois da confirmaca
 - Nunca armazenar chaves secretas do Supabase no frontend;
 - Usar apenas `anon public` no cliente;
 - Manter RLS e policies configuradas antes de expor buckets/tabelas publicamente.
+
+Para remover fotos pelo painel, o bucket `product-images` precisa permitir `select` e `delete` ao usuario autenticado quando a primeira pasta do arquivo for o seu `auth.uid()`. A migration local `supabase/migrations/20260902103000_fix_product_images_storage_policies.sql` garante essas policies para os caminhos legados e para os novos caminhos por produto.
 
 ## Quando Reavaliar
 

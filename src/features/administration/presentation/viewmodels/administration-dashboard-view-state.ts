@@ -1,4 +1,5 @@
 import type { AdministrationProduct } from "@/features/administration/domain/entities/administration-product";
+import type { AdministrationProductImageUpload } from "@/features/administration/domain/entities/administration-product-image-upload";
 
 export type AdministrationDashboardStatus = "initial" | "loading" | "success" | "failure";
 export type AdministrationSaveStatus = "idle" | "loading" | "saved" | "failure";
@@ -83,7 +84,12 @@ export type AdministrationImageCrop = {
   offsetY: number;
 };
 
+export const administrationProductImageSlots = [0, 1, 2, 3, 4] as const;
+export type AdministrationImageSlot = (typeof administrationProductImageSlots)[number];
+export type AdministrationImageSlots<T> = [T, T, T, T, T];
+
 export type AdministrationProductDraft = {
+  storageProductId?: string;
   name: string;
   description: string;
   category: string;
@@ -93,13 +99,9 @@ export type AdministrationProductDraft = {
   sizes: string[];
   colors: string[];
   models: string[];
-  imageUrls: [string, string, string];
-  thumbnailUrls: [string, string, string];
-  imageCrops: [
-    AdministrationImageCrop,
-    AdministrationImageCrop,
-    AdministrationImageCrop,
-  ];
+  imageUrls: AdministrationImageSlots<string>;
+  thumbnailUrls: AdministrationImageSlots<string>;
+  imageCrops: AdministrationImageSlots<AdministrationImageCrop>;
 };
 
 export type AdministrationDashboardViewState = {
@@ -112,6 +114,7 @@ export type AdministrationDashboardViewState = {
   saveStatus: AdministrationSaveStatus;
   draft: AdministrationProductDraft;
   products: AdministrationProduct[];
+  pendingImageUploads: AdministrationImageSlots<AdministrationProductImageUpload | undefined>;
   pendingImageDeletionUrls: string[];
   errorMessage?: string;
   feedbackMessage?: string;
@@ -127,9 +130,11 @@ export const emptyAdministrationProductDraft: AdministrationProductDraft = {
   sizes: [],
   colors: [],
   models: [],
-  imageUrls: ["", "", ""],
-  thumbnailUrls: ["", "", ""],
+  imageUrls: ["", "", "", "", ""],
+  thumbnailUrls: ["", "", "", "", ""],
   imageCrops: [
+    { zoom: 1, offsetX: 0, offsetY: 0 },
+    { zoom: 1, offsetX: 0, offsetY: 0 },
     { zoom: 1, offsetX: 0, offsetY: 0 },
     { zoom: 1, offsetX: 0, offsetY: 0 },
     { zoom: 1, offsetX: 0, offsetY: 0 },
@@ -146,5 +151,6 @@ export const initialAdministrationDashboardViewState: AdministrationDashboardVie
   saveStatus: "idle",
   draft: emptyAdministrationProductDraft,
   products: [],
+  pendingImageUploads: [undefined, undefined, undefined, undefined, undefined],
   pendingImageDeletionUrls: [],
 };

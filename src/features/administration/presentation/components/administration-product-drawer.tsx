@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { FiCrop, FiImage, FiMinus, FiPlus, FiTrash2, FiUpload, FiX } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiCrop, FiImage, FiMinus, FiMove, FiPlus, FiTrash2, FiUpload, FiX } from "react-icons/fi";
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
@@ -16,6 +16,7 @@ import {
   administrationCategoryOptions,
   administrationColorOptions,
   type AdministrationImageCrop,
+  type AdministrationImageSlot,
   administrationModelOptions,
   administrationSizeOptions,
   type AdministrationEditorMode,
@@ -36,13 +37,14 @@ type AdministrationProductDrawerProps = {
   onDecrementStock(): void;
   onToggleActive(): void;
   onToggleOption(field: "sizes" | "colors" | "models", value: string): void;
-  onImageChange(index: 0 | 1 | 2, value: string): void;
-  onImageUpload(index: 0 | 1 | 2, upload: AdministrationProductImageUpload): Promise<boolean>;
+  onImageChange(index: AdministrationImageSlot, value: string): void;
+  onImagePrepare(index: AdministrationImageSlot, upload: AdministrationProductImageUpload, previewUrl: string): void;
   onImageUploadFailure(message: string): void;
   onImageCropChange(
-    index: 0 | 1 | 2,
+    index: AdministrationImageSlot,
     patch: { zoom?: number; offsetX?: number; offsetY?: number },
   ): void;
+  onImageReorder(from: AdministrationImageSlot, to: AdministrationImageSlot): void;
   onDelete(): void;
 };
 
@@ -70,7 +72,7 @@ type SingleSelectGroupProps = {
 };
 
 type CropModalState = {
-  index: 0 | 1 | 2;
+  index: AdministrationImageSlot;
   imageUrl: string;
   crop: AdministrationImageCrop;
   isPendingUpload: boolean;
@@ -227,14 +229,16 @@ export function AdministrationProductDrawer({
   onToggleActive,
   onToggleOption,
   onImageChange,
-  onImageUpload,
+  onImagePrepare,
   onImageUploadFailure,
   onImageCropChange,
+  onImageReorder,
   onDelete,
 }: AdministrationProductDrawerProps) {
   const createdBlobUrlsRef = useRef<string[]>([]);
   const [cropModalState, setCropModalState] = useState<CropModalState | null>(null);
   const [isApplyingCrop, setIsApplyingCrop] = useState(false);
+  const [draggedImageIndex, setDraggedImageIndex] = useState<AdministrationImageSlot | null>(null);
 
   useEffect(() => {
     return () => {
@@ -273,7 +277,7 @@ export function AdministrationProductDrawer({
     return null;
   }
 
-  function handleImageSelection(index: 0 | 1 | 2, file: File | undefined) {
+  function handleImageSelection(index: AdministrationImageSlot, file: File | undefined) {
     if (!file) {
       return;
     }
@@ -289,7 +293,7 @@ export function AdministrationProductDrawer({
     });
   }
 
-  function handleRemoveImage(index: 0 | 1 | 2) {
+  function handleRemoveImage(index: AdministrationImageSlot) {
     releaseImagePreview(draft.imageUrls[index]);
     onImageChange(index, "");
     onImageCropChange(index, { zoom: 1, offsetX: 0, offsetY: 0 });
@@ -299,7 +303,7 @@ export function AdministrationProductDrawer({
     }
   }
 
-  function handleOpenExistingCrop(index: 0 | 1 | 2) {
+  function handleOpenExistingCrop(index: AdministrationImageSlot) {
     if (!draft.imageUrls[index]) {
       return;
     }
@@ -354,13 +358,13 @@ export function AdministrationProductDrawer({
         imageSource = await response.blob();
       }
       const upload = await createProductImageUpload(imageSource, crop);
-      const wasUploaded = await onImageUpload(index, upload);
-      if (!wasUploaded) return;
+      const previewUrl = URL.createObjectURL(new Blob([upload.detail.bytes], { type: upload.detail.contentType }));
+      createdBlobUrlsRef.current.push(previewUrl);
+      onImagePrepare(index, upload, previewUrl);
 
       if (cropModalState.isPendingUpload) {
         releaseImagePreview(imageUrl);
       }
-      onImageCropChange(index, { zoom: 1, offsetX: 0, offsetY: 0 });
       setCropModalState(null);
     } catch (error) {
       onImageUploadFailure(
@@ -556,8 +560,23 @@ export function AdministrationProductDrawer({
             </span>
           </div>
           <div className="grid gap-4">
-            {draft.imageUrls.map((imageUrl, index) => (
-              <div key={index} className="grid gap-3 md:grid-cols-[132px_1fr]">
+            {draft.imageUrls.map((imageUrl, index) => {
+              const slot = index as AdministrationImageSlot;
+
+              return (
+              <div
+                key={slot}
+                draggable={Boolean(imageUrl)}
+                onDragStart={() => imageUrl && setDraggedImageIndex(slot)}
+                onDragOver={(event) => imageUrl && event.preventDefault()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  if (draggedImageIndex !== null && imageUrl) onImageReorder(draggedImageIndex, slot);
+                  setDraggedImageIndex(null);
+                }}
+                onDragEnd={() => setDraggedImageIndex(null)}
+                className={`grid gap-3 md:grid-cols-[132px_1fr] ${draggedImageIndex === slot ? "opacity-50" : ""}`}
+              >
                 <div
                   className="relative w-full overflow-hidden border border-[var(--color-border)] bg-[#f3f3f3]"
                   style={{ aspectRatio: catalogProductImageAspectRatio }}
@@ -588,13 +607,13 @@ export function AdministrationProductDrawer({
                       className="block font-black text-[var(--color-muted)]"
                       style={{ fontSize: administrationTypography.fieldLabel }}
                     >
-                      FOTO {index + 1}
+                      POSICAO {index + 1}{index === 0 ? " - CAPA" : ""}
                     </span>
                     <p
                       className="mt-2 text-[var(--color-foreground)]"
                       style={{ fontSize: administrationTypography.body }}
                     >
-                      {imageUrl ? "Imagem pronta para o cadastro." : "Selecione uma foto do aparelho."}
+                      {imageUrl ? "Arraste para definir a ordem ou use as setas." : "Selecione uma foto do aparelho."}
                     </p>
                   </div>
 
@@ -610,7 +629,7 @@ export function AdministrationProductDrawer({
                         accept="image/*"
                         className="hidden"
                         onChange={(event) =>
-                          handleImageSelection(index as 0 | 1 | 2, event.target.files?.[0])
+                          handleImageSelection(slot, event.target.files?.[0])
                         }
                       />
                     </label>
@@ -619,7 +638,7 @@ export function AdministrationProductDrawer({
                         type="button"
                         className="inline-flex h-10 items-center gap-2 border border-[var(--color-border)] bg-white px-3 font-black"
                         style={{ fontSize: administrationTypography.action }}
-                        onClick={() => handleOpenExistingCrop(index as 0 | 1 | 2)}
+                        onClick={() => handleOpenExistingCrop(slot)}
                       >
                         <FiCrop aria-hidden="true" />
                         RECORTAR
@@ -630,15 +649,29 @@ export function AdministrationProductDrawer({
                         type="button"
                         className="h-10 border border-[var(--color-border)] bg-white px-3 font-black"
                         style={{ fontSize: administrationTypography.action }}
-                        onClick={() => handleRemoveImage(index as 0 | 1 | 2)}
+                        onClick={() => handleRemoveImage(slot)}
                       >
                         REMOVER
                       </button>
                     ) : null}
+                    {imageUrl ? (
+                      <div className="flex gap-2">
+                        <button type="button" className="grid size-10 place-items-center border border-[var(--color-border)] bg-white disabled:cursor-not-allowed disabled:opacity-40" onClick={() => onImageReorder(slot, (slot - 1) as AdministrationImageSlot)} disabled={slot === 0} aria-label={`Mover foto ${slot + 1} para a esquerda`} title="Mover para a esquerda">
+                          <FiChevronLeft aria-hidden="true" />
+                        </button>
+                        <button type="button" className="grid size-10 place-items-center border border-[var(--color-border)] bg-white disabled:cursor-not-allowed disabled:opacity-40" onClick={() => onImageReorder(slot, (slot + 1) as AdministrationImageSlot)} disabled={slot === 4} aria-label={`Mover foto ${slot + 1} para a direita`} title="Mover para a direita">
+                          <FiChevronRight aria-hidden="true" />
+                        </button>
+                        <span className="grid size-10 place-items-center border border-dashed border-[var(--color-border)] text-[var(--color-muted)]" title="Arraste esta foto para mudar a posicao">
+                          <FiMove aria-hidden="true" />
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -812,7 +845,7 @@ export function AdministrationProductDrawer({
                       onClick={handleApplyCrop}
                     disabled={isApplyingCrop}
                   >
-                    {isApplyingCrop ? "ENVIANDO..." : "USAR RECORTE"}
+                    {isApplyingCrop ? "PREPARANDO..." : "USAR RECORTE"}
                   </button>
                 </div>
               </div>

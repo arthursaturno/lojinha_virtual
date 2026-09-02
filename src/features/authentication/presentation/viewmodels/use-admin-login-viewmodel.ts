@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { SignInAdminUseCase } from "@/features/authentication/domain/usecases/sign-in-admin-usecase";
 import {
@@ -12,6 +12,7 @@ type SignInAdminUseCaseFactory = () => SignInAdminUseCase;
 
 export function useAdminLoginViewModel(createSignInAdminUseCase: SignInAdminUseCaseFactory) {
   const [state, setState] = useState<AdminLoginViewState>(initialAdminLoginViewState);
+  const isSubmittingRef = useRef(false);
 
   function updateEmail(email: string) {
     setState((current) => ({ ...current, email, errorMessage: "", status: "initial" }));
@@ -22,6 +23,11 @@ export function useAdminLoginViewModel(createSignInAdminUseCase: SignInAdminUseC
   }
 
   async function submit() {
+    if (isSubmittingRef.current) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setState((current) => ({ ...current, status: "loading", errorMessage: "", effect: null }));
 
     let signInAdminUseCase: SignInAdminUseCase;
@@ -34,32 +40,37 @@ export function useAdminLoginViewModel(createSignInAdminUseCase: SignInAdminUseC
         status: "failure",
         errorMessage: "Configuracao nao encontrada.",
       }));
+      isSubmittingRef.current = false;
       return;
     }
 
-    const result = await signInAdminUseCase.call({
-      email: state.email,
-      password: state.password,
-    });
+    try {
+      const result = await signInAdminUseCase.call({
+        email: state.email,
+        password: state.password,
+      });
 
-    if (!result.ok) {
+      if (!result.ok) {
+        setState((current) => ({
+          ...current,
+          status: "failure",
+          errorMessage: result.failure.message,
+        }));
+        return;
+      }
+
       setState((current) => ({
         ...current,
-        status: "failure",
-        errorMessage: result.failure.message,
+        status: "success",
+        password: "",
+        effect: {
+          type: "signed-in",
+          session: result.data,
+        },
       }));
-      return;
+    } finally {
+      isSubmittingRef.current = false;
     }
-
-    setState((current) => ({
-      ...current,
-      status: "success",
-      password: "",
-      effect: {
-        type: "signed-in",
-        session: result.data,
-      },
-    }));
   }
 
   function clearEffect() {

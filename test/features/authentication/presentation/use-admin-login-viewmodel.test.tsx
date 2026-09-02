@@ -56,4 +56,28 @@ describe("useAdminLoginViewModel", () => {
       "Configuracao nao encontrada.",
     );
   });
+
+  it("ignores a second submit while authentication is pending", async () => {
+    let finishSignIn: ((result: Awaited<ReturnType<SignInAdminUseCase["call"]>>) => void) | undefined;
+    const useCase = {
+      call: vi.fn(
+        () => new Promise<Awaited<ReturnType<SignInAdminUseCase["call"]>>>((resolve) => {
+          finishSignIn = resolve;
+        }),
+      ),
+    } as unknown as SignInAdminUseCase;
+    const { result } = renderHook(() => useAdminLoginViewModel(() => useCase));
+
+    act(() => result.current.actions.updateEmail("admin@ezzionimports.com"));
+    act(() => result.current.actions.updatePassword("secret"));
+
+    await act(async () => {
+      const firstSubmit = result.current.actions.submit();
+      const secondSubmit = result.current.actions.submit();
+      finishSignIn?.(Result.success({ adminId: "admin-id", email: "admin@ezzionimports.com" }));
+      await Promise.all([firstSubmit, secondSubmit]);
+    });
+
+    expect(useCase.call).toHaveBeenCalledTimes(1);
+  });
 });

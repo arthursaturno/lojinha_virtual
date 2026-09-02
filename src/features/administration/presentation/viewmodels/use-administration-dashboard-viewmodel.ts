@@ -17,6 +17,8 @@ import {
   administrationProductsPerPage,
   type AdministrationDashboardViewState,
   type AdministrationImageCrop,
+  type AdministrationImageSlot,
+  type AdministrationImageSlots,
   type AdministrationProductDraft,
 } from "@/features/administration/presentation/viewmodels/administration-dashboard-view-state";
 
@@ -24,14 +26,19 @@ function createDefaultImageCrop(): AdministrationImageCrop {
   return { zoom: 1, offsetX: 0, offsetY: 0 };
 }
 
+function createEmptyPendingImageUploads(): AdministrationImageSlots<AdministrationProductImageUpload | undefined> {
+  return [undefined, undefined, undefined, undefined, undefined];
+}
+
 function createDraftFromProduct(product: AdministrationProduct | undefined): AdministrationProductDraft {
-  const imageUrls = product?.imageUrls.slice(0, 3) ?? [];
-  const thumbnailUrls = product?.thumbnailUrls?.slice(0, 3) ?? [];
+  const imageUrls = product?.imageUrls.slice(0, 5) ?? [];
+  const thumbnailUrls = product?.thumbnailUrls?.slice(0, 5) ?? [];
   const sizes = product ? Array.from(new Set(product.variants.map((variant) => variant.size))) : [];
   const colors = product ? Array.from(new Set(product.variants.map((variant) => variant.color))) : [];
   const models = product ? Array.from(new Set(product.variants.map((variant) => variant.model))) : [];
 
   return {
+    storageProductId: undefined,
     name: product?.name ?? "",
     description: product?.description ?? "",
     category: product?.category ?? "",
@@ -41,12 +48,30 @@ function createDraftFromProduct(product: AdministrationProduct | undefined): Adm
     sizes,
     colors,
     models,
-    imageUrls: [imageUrls[0] ?? "", imageUrls[1] ?? "", imageUrls[2] ?? ""],
-    thumbnailUrls: [thumbnailUrls[0] ?? "", thumbnailUrls[1] ?? "", thumbnailUrls[2] ?? ""],
+    imageUrls: [imageUrls[0] ?? "", imageUrls[1] ?? "", imageUrls[2] ?? "", imageUrls[3] ?? "", imageUrls[4] ?? ""],
+    thumbnailUrls: [thumbnailUrls[0] ?? "", thumbnailUrls[1] ?? "", thumbnailUrls[2] ?? "", thumbnailUrls[3] ?? "", thumbnailUrls[4] ?? ""],
     imageCrops: [
       product?.imageCrops?.[0] ?? createDefaultImageCrop(),
       product?.imageCrops?.[1] ?? createDefaultImageCrop(),
       product?.imageCrops?.[2] ?? createDefaultImageCrop(),
+      product?.imageCrops?.[3] ?? createDefaultImageCrop(),
+      product?.imageCrops?.[4] ?? createDefaultImageCrop(),
+    ],
+  };
+}
+
+function createNewProductDraft(): AdministrationProductDraft {
+  return {
+    ...emptyAdministrationProductDraft,
+    storageProductId: crypto.randomUUID(),
+    imageUrls: ["", "", "", "", ""],
+    thumbnailUrls: ["", "", "", "", ""],
+    imageCrops: [
+      createDefaultImageCrop(),
+      createDefaultImageCrop(),
+      createDefaultImageCrop(),
+      createDefaultImageCrop(),
+      createDefaultImageCrop(),
     ],
   };
 }
@@ -71,7 +96,7 @@ function createProductFromDraft(
   const stockQuantities = distributeStockQuantity(draft.totalStockQuantity, variantOptions.length);
 
   return {
-    id: selectedProductId ?? `draft-${Date.now()}`,
+    id: selectedProductId ?? draft.storageProductId ?? crypto.randomUUID(),
     name: draft.name.trim() || "Novo produto",
     description: draft.description.trim(),
     category: draft.category || "Sem categoria",
@@ -174,6 +199,7 @@ export function useAdministrationDashboardViewModel(
       editorMode: "edit",
       saveStatus: "idle",
       feedbackMessage: undefined,
+      pendingImageUploads: createEmptyPendingImageUploads(),
       pendingImageDeletionUrls: [],
       draft: createDraftFromProduct(nextProduct),
     }));
@@ -187,8 +213,9 @@ export function useAdministrationDashboardViewModel(
       editorMode: "create",
       saveStatus: "idle",
       feedbackMessage: undefined,
+      pendingImageUploads: createEmptyPendingImageUploads(),
       pendingImageDeletionUrls: [],
-      draft: emptyAdministrationProductDraft,
+      draft: createNewProductDraft(),
     }));
   }
 
@@ -283,27 +310,17 @@ export function useAdministrationDashboardViewModel(
     });
   }
 
-  function updateDraftImage(index: 0 | 1 | 2, value: string) {
+  function updateDraftImage(index: AdministrationImageSlot, value: string) {
     setState((current) => {
-      const nextImageUrls: [string, string, string] = [...current.draft.imageUrls] as [
-        string,
-        string,
-        string,
-      ];
-      const nextThumbnailUrls: [string, string, string] = [...current.draft.thumbnailUrls] as [
-        string,
-        string,
-        string,
-      ];
-      const nextImageCrops = [...current.draft.imageCrops] as [
-        AdministrationImageCrop,
-        AdministrationImageCrop,
-        AdministrationImageCrop,
-      ];
+      const nextImageUrls = [...current.draft.imageUrls] as AdministrationImageSlots<string>;
+      const nextThumbnailUrls = [...current.draft.thumbnailUrls] as AdministrationImageSlots<string>;
+      const nextImageCrops = [...current.draft.imageCrops] as AdministrationImageSlots<AdministrationImageCrop>;
+      const nextPendingImageUploads = [...current.pendingImageUploads] as AdministrationImageSlots<AdministrationProductImageUpload | undefined>;
 
       nextImageUrls[index] = value;
       nextThumbnailUrls[index] = value;
       nextImageCrops[index] = createDefaultImageCrop();
+      nextPendingImageUploads[index] = undefined;
 
       return {
         ...current,
@@ -313,6 +330,7 @@ export function useAdministrationDashboardViewModel(
           current.draft.imageUrls[index] !== value && isStoredProductImage(current.draft.imageUrls[index])
             ? [...new Set([...current.pendingImageDeletionUrls, current.draft.imageUrls[index]])]
             : current.pendingImageDeletionUrls,
+        pendingImageUploads: nextPendingImageUploads,
         draft: {
           ...current.draft,
           imageUrls: nextImageUrls,
@@ -323,13 +341,9 @@ export function useAdministrationDashboardViewModel(
     });
   }
 
-  function updateDraftImageCrop(index: 0 | 1 | 2, patch: Partial<AdministrationImageCrop>) {
+  function updateDraftImageCrop(index: AdministrationImageSlot, patch: Partial<AdministrationImageCrop>) {
     setState((current) => {
-      const nextImageCrops = [...current.draft.imageCrops] as [
-        AdministrationImageCrop,
-        AdministrationImageCrop,
-        AdministrationImageCrop,
-      ];
+      const nextImageCrops = [...current.draft.imageCrops] as AdministrationImageSlots<AdministrationImageCrop>;
 
       nextImageCrops[index] = {
         ...nextImageCrops[index],
@@ -348,36 +362,65 @@ export function useAdministrationDashboardViewModel(
     });
   }
 
-  async function uploadDraftImage(index: 0 | 1 | 2, upload: AdministrationProductImageUpload) {
-    if (!productActions) {
-      return false;
-    }
-
-    setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
-    const result = await productActions.uploadImage.call(upload);
-    if (!result.ok) {
-      setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
-      return false;
-    }
+  function reorderDraftImages(from: AdministrationImageSlot, to: AdministrationImageSlot) {
+    if (from === to) return;
 
     setState((current) => {
+      const imageItems = current.draft.imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        thumbnailUrl: current.draft.thumbnailUrls[index],
+        crop: current.draft.imageCrops[index],
+        pendingUpload: current.pendingImageUploads[index],
+      }));
+      const [movedItem] = imageItems.splice(from, 1);
+      imageItems.splice(to, 0, movedItem);
+      const orderedItems = [
+        ...imageItems.filter((item) => item.imageUrl),
+        ...imageItems.filter((item) => !item.imageUrl),
+      ];
+
+      return {
+        ...current,
+        saveStatus: "idle",
+        feedbackMessage: undefined,
+        pendingImageUploads: orderedItems.map((item) => item.pendingUpload) as AdministrationImageSlots<AdministrationProductImageUpload | undefined>,
+        draft: {
+          ...current.draft,
+          imageUrls: orderedItems.map((item) => item.imageUrl) as AdministrationImageSlots<string>,
+          thumbnailUrls: orderedItems.map((item) => item.thumbnailUrl) as AdministrationImageSlots<string>,
+          imageCrops: orderedItems.map((item) => item.crop) as AdministrationImageSlots<AdministrationImageCrop>,
+        },
+      };
+    });
+  }
+
+  function prepareDraftImage(
+    index: AdministrationImageSlot,
+    upload: AdministrationProductImageUpload,
+    previewUrl: string,
+  ) {
+    setState((current) => {
       const previousImageUrl = current.draft.imageUrls[index];
-      const imageUrls = [...current.draft.imageUrls] as [string, string, string];
-      const thumbnailUrls = [...current.draft.thumbnailUrls] as [string, string, string];
-      imageUrls[index] = result.data.detailUrl;
-      thumbnailUrls[index] = result.data.thumbnailUrl;
+      const imageUrls = [...current.draft.imageUrls] as AdministrationImageSlots<string>;
+      const thumbnailUrls = [...current.draft.thumbnailUrls] as AdministrationImageSlots<string>;
+      const imageCrops = [...current.draft.imageCrops] as AdministrationImageSlots<AdministrationImageCrop>;
+      const pendingImageUploads = [...current.pendingImageUploads] as AdministrationImageSlots<AdministrationProductImageUpload | undefined>;
+      imageUrls[index] = previewUrl;
+      thumbnailUrls[index] = previewUrl;
+      imageCrops[index] = createDefaultImageCrop();
+      pendingImageUploads[index] = upload;
       return {
         ...current,
         saveStatus: "idle",
         feedbackMessage: undefined,
         pendingImageDeletionUrls:
-          previousImageUrl && previousImageUrl !== result.data.detailUrl && isStoredProductImage(previousImageUrl)
+          previousImageUrl && previousImageUrl !== previewUrl && isStoredProductImage(previousImageUrl)
             ? [...new Set([...current.pendingImageDeletionUrls, previousImageUrl])]
             : current.pendingImageDeletionUrls,
-        draft: { ...current.draft, imageUrls, thumbnailUrls },
+        pendingImageUploads,
+        draft: { ...current.draft, imageUrls, thumbnailUrls, imageCrops },
       };
     });
-    return true;
   }
 
   function reportImageUploadFailure(message: string) {
@@ -393,12 +436,38 @@ export function useAdministrationDashboardViewModel(
 
     try {
       if (productActions) {
-        const product = createProductFromDraft(state.draft, state.selectedProductId);
+        const draftWithUploadedImages: AdministrationProductDraft = {
+          ...state.draft,
+          imageUrls: [...state.draft.imageUrls] as AdministrationImageSlots<string>,
+          thumbnailUrls: [...state.draft.thumbnailUrls] as AdministrationImageSlots<string>,
+        };
+        const uploadedImageUrls: string[] = [];
         const imageUrlsToDelete = state.pendingImageDeletionUrls;
         setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
+
+        for (const [index, upload] of state.pendingImageUploads.entries()) {
+          if (!upload) continue;
+
+          const uploadResult = await productActions.uploadImage.call({
+            ...upload,
+            productId: state.editorMode === "create" ? state.draft.storageProductId : undefined,
+          });
+          if (!uploadResult.ok) {
+            await productActions.deleteImages.call(uploadedImageUrls);
+            setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: uploadResult.failure.message }));
+            return;
+          }
+
+          draftWithUploadedImages.imageUrls[index] = uploadResult.data.detailUrl;
+          draftWithUploadedImages.thumbnailUrls[index] = uploadResult.data.thumbnailUrl;
+          uploadedImageUrls.push(uploadResult.data.detailUrl, uploadResult.data.thumbnailUrl);
+        }
+
+        const product = createProductFromDraft(draftWithUploadedImages, state.selectedProductId);
         const result = await (state.editorMode === "create" ? productActions.create : productActions.update).call(product);
 
         if (!result.ok) {
+          await productActions.deleteImages.call(uploadedImageUrls);
           setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
           return;
         }
@@ -409,7 +478,20 @@ export function useAdministrationDashboardViewModel(
           const nextProducts = current.editorMode === "create"
             ? [result.data, ...current.products]
             : current.products.map((item) => (item.id === result.data.id ? result.data : item));
-          return { ...current, products: nextProducts, currentPage: current.editorMode === "create" ? 1 : current.currentPage, selectedProductId: result.data.id, editorMode: "edit", saveStatus: deleteImagesResult.ok ? "saved" : "failure", feedbackMessage: deleteImagesResult.ok ? (current.editorMode === "create" ? "Produto criado com sucesso." : "Produto atualizado com sucesso.") : deleteImagesResult.failure.message, pendingImageDeletionUrls: deleteImagesResult.ok ? [] : current.pendingImageDeletionUrls };
+          return {
+            ...current,
+            products: nextProducts,
+            currentPage: current.editorMode === "create" ? 1 : current.currentPage,
+            selectedProductId: result.data.id,
+            editorMode: "edit",
+            saveStatus: deleteImagesResult.ok ? "saved" : "failure",
+            feedbackMessage: deleteImagesResult.ok
+              ? (current.editorMode === "create" ? "Produto criado com sucesso." : "Produto atualizado com sucesso.")
+              : deleteImagesResult.failure.message,
+            pendingImageUploads: createEmptyPendingImageUploads(),
+            pendingImageDeletionUrls: deleteImagesResult.ok ? [] : current.pendingImageDeletionUrls,
+            draft: createDraftFromProduct(result.data),
+          };
         });
         return;
       }
@@ -441,16 +523,10 @@ export function useAdministrationDashboardViewModel(
 
   async function deleteSelectedProduct() {
     if (productActions && state.selectedProductId) {
-      const selectedProductImages = state.products.find((product) => product.id === state.selectedProductId)?.imageUrls ?? [];
       setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
       const result = await productActions.delete.call(state.selectedProductId);
       if (!result.ok) {
         setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
-        return;
-      }
-      const deleteImagesResult = await productActions.deleteImages.call(selectedProductImages);
-      if (!deleteImagesResult.ok) {
-        setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: deleteImagesResult.failure.message }));
         return;
       }
     }
@@ -501,9 +577,10 @@ export function useAdministrationDashboardViewModel(
       toggleDraftActive,
       toggleDraftListField,
       updateDraftImage,
-      uploadDraftImage,
+      prepareDraftImage,
       reportImageUploadFailure,
       updateDraftImageCrop,
+      reorderDraftImages,
       saveSelections,
       deleteSelectedProduct,
     },

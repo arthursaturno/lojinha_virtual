@@ -90,7 +90,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
     return [...filtered].sort(
       (first, second) => getStorefrontProductPriority(first.category, first.name) - getStorefrontProductPriority(second.category, second.name),
     );
-  }, [colorFilters, maxPrice, modelFilters, sizeFilters, state]);
+  }, [colorFilters, modelFilters, sizeFilters, state]);
 
   const categoryCount = useMemo(
     () =>

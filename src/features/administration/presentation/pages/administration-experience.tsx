@@ -79,9 +79,10 @@ export function AdministrationExperience({
           onToggleActive={actions.toggleDraftActive}
           onToggleOption={actions.toggleDraftListField}
           onImageChange={actions.updateDraftImage}
-          onImageUpload={actions.uploadDraftImage}
+          onImagePrepare={actions.prepareDraftImage}
           onImageUploadFailure={actions.reportImageUploadFailure}
           onImageCropChange={actions.updateDraftImageCrop}
+          onImageReorder={actions.reorderDraftImages}
           onDelete={actions.deleteSelectedProduct}
           onSave={actions.saveSelections}
         />

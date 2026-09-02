@@ -33,6 +33,23 @@ type ProductRow = {
   product_variants: Array<{ id: string; size: string; color: string; model: string; price: number; stock_quantity: number; is_active: boolean }>;
 };
 
+const productImagesBucket = "product-images";
+const productImagesPublicPathPrefix = "/storage/v1/object/public/product-images/";
+const orphanImageMinimumAgeInMs = 15 * 60 * 1000;
+
+function getProductImageStoragePath(imageUrl: string): string | null {
+  try {
+    const pathname = new URL(imageUrl).pathname;
+    const pathStart = pathname.indexOf(productImagesPublicPathPrefix);
+
+    return pathStart >= 0
+      ? decodeURIComponent(pathname.slice(pathStart + productImagesPublicPathPrefix.length))
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function toDto(row: ProductRow): AdministrationProductDto {
   const variants = row.product_variants ?? [];
   const totalStockQuantity = variants.reduce((total, variant) => total + variant.stock_quantity, 0);
@@ -79,7 +96,7 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
   async create(product: AdministrationProduct): Promise<AdministrationProductDto> {
     const { data: userData, error: userError } = await this.supabaseClient.auth.getUser();
     if (userError || !userData.user) throw new Error("Sessao administrativa nao encontrada.");
-    const { data, error } = await this.supabaseClient.from("products").insert({ owner_id: userData.user.id, name: product.name, description: product.description, category: product.category, base_price: product.basePrice, is_active: product.isActive }).select("id").single();
+    const { data, error } = await this.supabaseClient.from("products").insert({ id: product.id, owner_id: userData.user.id, name: product.name, description: product.description, category: product.category, base_price: product.basePrice, is_active: product.isActive }).select("id").single();
     if (error || !data) throw new Error(error?.message ?? "Nao foi possivel criar o produto.");
     await this.replaceRelations(data.id as string, product);
     return this.findOne(data.id as string);
@@ -106,27 +123,31 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
   }
 
   async delete(productId: string): Promise<void> {
+    const { data: userData, error: userError } = await this.supabaseClient.auth.getUser();
+    if (userError || !userData.user) throw new Error("Sessao administrativa nao encontrada.");
+
+    const { data: images, error: imagesError } = await this.supabaseClient
+      .from("product_images")
+      .select("image_url")
+      .eq("product_id", productId);
+    if (imagesError) throw new Error(imagesError.message);
+
+    await this.deleteImages((images ?? []).map((image) => image.image_url));
+    await this.deleteStaleOrphanedImages(userData.user.id);
+
     const { error } = await this.supabaseClient.from("products").delete().eq("id", productId);
     if (error) throw new Error(error.message);
   }
 
   async deleteImages(imageUrls: string[]): Promise<void> {
-    const publicPathPrefix = "/storage/v1/object/public/product-images/";
     const objectPaths = imageUrls.flatMap((imageUrl) => {
-      try {
-        const pathname = new URL(imageUrl).pathname;
-        const pathStart = pathname.indexOf(publicPathPrefix);
-        return pathStart >= 0
-          ? [decodeURIComponent(pathname.slice(pathStart + publicPathPrefix.length))]
-          : [];
-      } catch {
-        return [];
-      }
+      const objectPath = getProductImageStoragePath(imageUrl);
+      return objectPath ? [objectPath] : [];
     });
 
     if (objectPaths.length === 0) return;
 
-    const { error } = await this.supabaseClient.storage.from("product-images").remove(objectPaths);
+    const { error } = await this.supabaseClient.storage.from(productImagesBucket).remove(objectPaths);
     if (error) throw new Error(error.message);
   }
 
@@ -135,8 +156,10 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
     if (userError || !userData.user) throw new Error("Sessao administrativa nao encontrada.");
 
     const uploadId = crypto.randomUUID();
-    const detailPath = `${userData.user.id}/details/${uploadId}-${upload.detail.fileName}`;
-    const bucket = this.supabaseClient.storage.from("product-images");
+    const detailPath = upload.productId
+      ? `${userData.user.id}/products/${upload.productId}/${uploadId}-${upload.detail.fileName}`
+      : `${userData.user.id}/details/${uploadId}-${upload.detail.fileName}`;
+    const bucket = this.supabaseClient.storage.from(productImagesBucket);
     const { error: detailError } = await bucket.upload(detailPath, upload.detail.bytes, {
       contentType: upload.detail.contentType,
       upsert: false,
@@ -159,7 +182,7 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
     ]);
     if (variantsDeleteError || imagesDeleteError) throw new Error(variantsDeleteError?.message ?? imagesDeleteError?.message);
     const variants = product.variants.map((variant) => ({ product_id: productId, size: variant.size, color: variant.color, model: variant.model, price: variant.price, stock_quantity: variant.stockQuantity, is_active: product.isActive }));
-    const images = product.imageUrls.slice(0, 3).map((imageUrl, position) => {
+    const images = product.imageUrls.slice(0, 5).map((imageUrl, position) => {
       const crop = product.imageCrops?.[position] ?? { zoom: 1, offsetX: 0, offsetY: 0 };
       return {
         product_id: productId,
@@ -172,6 +195,35 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
     });
     if (variants.length) { const { error } = await this.supabaseClient.from("product_variants").insert(variants); if (error) throw new Error(error.message); }
     if (images.length) { const { error } = await this.supabaseClient.from("product_images").insert(images); if (error) throw new Error(error.message); }
+  }
+
+  private async deleteStaleOrphanedImages(ownerId: string): Promise<void> {
+    const bucket = this.supabaseClient.storage.from(productImagesBucket);
+    const folder = `${ownerId}/details`;
+    const [{ data: storedObjects, error: storedObjectsError }, { data: productImages, error: productImagesError }] = await Promise.all([
+      bucket.list(folder, { limit: 1000 }),
+      this.supabaseClient.from("product_images").select("image_url"),
+    ]);
+    if (storedObjectsError) throw new Error(storedObjectsError.message);
+    if (productImagesError) throw new Error(productImagesError.message);
+
+    const referencedPaths = new Set(
+      (productImages ?? [])
+        .flatMap((image) => {
+          const path = getProductImageStoragePath(image.image_url);
+          return path ? [path] : [];
+        }),
+    );
+    const expirationTime = Date.now() - orphanImageMinimumAgeInMs;
+    const orphanPaths = (storedObjects ?? [])
+      .filter((object) => object.created_at && new Date(object.created_at).getTime() <= expirationTime)
+      .map((object) => `${folder}/${object.name}`)
+      .filter((path) => !referencedPaths.has(path));
+
+    if (orphanPaths.length === 0) return;
+
+    const { error } = await bucket.remove(orphanPaths);
+    if (error) throw new Error(error.message);
   }
 
   private async findOne(productId: string): Promise<AdministrationProductDto> {
