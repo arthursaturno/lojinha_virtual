@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
 
 import type { SupabaseBrowserConfig } from "@/core/network/supabase/browser-client";
@@ -37,11 +37,16 @@ export function CatalogExperience({ products, storeName, whatsappPhone, configur
   const { state, actions } = viewModel;
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [popupPromotion, setPopupPromotion] = useState<StorePromotion | null>(() => {
-    if (typeof window === "undefined") return null;
+  const [popupPromotion, setPopupPromotion] = useState<StorePromotion | null>(null);
+
+  useEffect(() => {
     const activePopup = promotions.find((promotion) => promotion.kind === "popup" && (promotion.imageUrls?.length || promotion.imageUrl));
-    return activePopup && !window.sessionStorage.getItem(`promotion-popup:${activePopup.id}`) ? activePopup : null;
-  });
+    const timeoutId = window.setTimeout(() => {
+      setPopupPromotion(activePopup && !window.sessionStorage.getItem(`promotion-popup:${activePopup.id}`) ? activePopup : null);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [promotions]);
 
   function closePromotionPopup() {
     if (popupPromotion) window.sessionStorage.setItem(`promotion-popup:${popupPromotion.id}`, "seen");

@@ -3,6 +3,8 @@ export type StoreFilterType = "category" | "size" | "color" | "model";
 export type StoreFilterOptions = Record<StoreFilterType, string[]>;
 
 const storefrontCategoryPriority = new Map([
+  ["camiseta", 0],
+  ["camisetas", 0],
   ["camisa", 0],
   ["camisas", 0],
   ["short", 1],
