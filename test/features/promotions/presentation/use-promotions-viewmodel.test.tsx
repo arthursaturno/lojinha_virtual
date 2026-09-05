@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { StorePromotion } from "@/core/promotions/promotion";
+import { Result } from "@/core/result/result";
 import { usePromotionsViewModel } from "@/features/promotions/presentation/viewmodels/use-promotions-viewmodel";
 
 const promotions: StorePromotion[] = [{
@@ -71,5 +72,26 @@ describe("usePromotionsViewModel", () => {
     act(() => result.current.actions.openCartBenefitsCampaign());
 
     expect(result.current.state.draft?.benefitRule?.title).toBe("Frete gratis");
+  });
+
+  it("saves popup image URLs only when the save action is requested", async () => {
+    const savedPromotion: StorePromotion = {
+      id: "promotion-popup",
+      internalName: "Popup da loja",
+      kind: "popup",
+      imageUrls: ["https://example.supabase.co/popup.webp"],
+      imageUrl: "https://example.supabase.co/popup.webp",
+      isActive: true,
+      priority: 0,
+    };
+    actions.save.call.mockResolvedValueOnce(Result.success(savedPromotion));
+    const { result } = renderHook(() => usePromotionsViewModel([], actions));
+
+    act(() => result.current.actions.openCampaign("popup"));
+    await act(async () => {
+      await result.current.actions.save(savedPromotion.imageUrls);
+    });
+
+    expect(actions.save.call).toHaveBeenLastCalledWith(expect.objectContaining({ imageUrls: savedPromotion.imageUrls }));
   });
 });

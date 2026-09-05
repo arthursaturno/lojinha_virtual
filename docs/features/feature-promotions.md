@@ -6,7 +6,7 @@ Permitir que o administrador cadastre campanhas e regras comerciais sem depender
 
 ## Tipos de campanha
 
-- `popup`: uma imagem exibida uma vez por sessao do navegador;
+- `popup`: uma imagem exibida uma vez por sessao do navegador; quando fica pausado, pode permanecer sem foto;
 - `product_discount`: desconto percentual, valor fixo ou preco fixo para um produto;
 - `quantity_discount`: leve uma quantidade e pague outra, para o mesmo produto;
 - `cart_benefit`: desconto selecionavel no carrinho, com titulo e descricao visiveis para o cliente;
@@ -31,7 +31,10 @@ Se a base de promocoes ainda nao existir, execute no SQL Editor nesta ordem:
 1. `supabase/migrations/20260901090000_create_promotions.sql` para criar a base de campanhas e o bucket de imagens;
 2. `supabase/migrations/20260905140000_add_cart_benefit_promotion_kind.sql` para registrar o novo tipo de campanha;
 3. `supabase/migrations/20260905150000_finish_selectable_promotions.sql` para habilitar beneficios selecionaveis, alvos por produto/categoria/marca e as RPCs usadas pelo carrinho.
-4. `supabase/migrations/20260905160000_add_promotion_images.sql` para permitir uma galeria de ate cinco fotos por popup.
+4. `supabase/migrations/20260905160000_add_promotion_images.sql` para criar a galeria de fotos do popup.
+5. `supabase/migrations/20260906100000_allow_paused_popup_without_image.sql` para permitir salvar popup pausado sem foto.
+6. `supabase/migrations/20260906110000_harden_promotion_images_storage_deletion.sql` para autorizar e confirmar a exclusao das fotos de campanhas no Storage.
+7. `supabase/migrations/20260906120000_increase_popup_image_limit.sql` para ampliar a galeria do popup para dez fotos.
 5. `supabase/migrations/20260905170000_allow_multiple_cart_benefits.sql` para permitir varios itens em Beneficios do carrinho.
 6. `supabase/migrations/20260905180000_fix_cart_benefits_and_shipping.sql` para identificar cada beneficio individualmente, calcular frete fixo e criar `store_shipping_settings`.
 7. `supabase/migrations/20260905190000_add_shipping_value_to_benefits.sql` para exibir a economia de frete a partir da configuracao global da loja.
