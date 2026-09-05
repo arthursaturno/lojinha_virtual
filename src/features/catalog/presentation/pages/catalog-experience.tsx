@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { FiMenu, FiX } from "react-icons/fi";
+import { useMemo, useState } from "react";
+import { FiMenu, FiShoppingBag, FiX } from "react-icons/fi";
 
+import type { SupabaseBrowserConfig } from "@/core/network/supabase/browser-client";
+import { createCatalogCartActions } from "@/core/di/catalog-browser";
+import { createPromotionActions } from "@/core/di/promotions-browser";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import type { StoreFilterOptions } from "@/core/store-filters/store-filter-options";
 import { CatalogFilters } from "@/features/catalog/presentation/components/catalog-filters";
@@ -10,20 +13,75 @@ import { CatalogHeader } from "@/features/catalog/presentation/components/catalo
 import { CatalogHero } from "@/features/catalog/presentation/components/catalog-hero";
 import { CatalogProductGrid } from "@/features/catalog/presentation/components/catalog-product-grid";
 import { ProductDrawer } from "@/features/catalog/presentation/components/product-drawer";
+import { CatalogCartDrawer } from "@/features/catalog/presentation/components/catalog-cart-drawer";
+import { PromotionPopup } from "@/features/catalog/presentation/components/promotion-popup";
 import { WhatsAppLabel } from "@/features/catalog/presentation/components/whatsapp-label";
+import type { StorePromotion } from "@/core/promotions/promotion";
+import type { PromotionCartValidation } from "@/core/promotions/promotion";
 import { useCatalogViewModel } from "@/features/catalog/presentation/viewmodels/use-catalog-viewmodel";
+import { createCartWhatsAppMessage, createWhatsAppUrl } from "@/features/catalog/presentation/utils/create-cart-whatsapp-message";
 
 type CatalogExperienceProps = {
   products: CatalogProduct[];
   storeName: string;
   whatsappPhone: string;
+  supabaseConfig: SupabaseBrowserConfig;
   configuredFilters?: StoreFilterOptions;
+  promotions: StorePromotion[];
 };
 
-export function CatalogExperience({ products, storeName, whatsappPhone, configuredFilters }: CatalogExperienceProps) {
-  const viewModel = useCatalogViewModel(products, configuredFilters);
+export function CatalogExperience({ products, storeName, whatsappPhone, configuredFilters, supabaseConfig, promotions }: CatalogExperienceProps) {
+  const cartActions = useMemo(() => createCatalogCartActions(), []);
+  const promotionActions = useMemo(() => createPromotionActions(supabaseConfig), [supabaseConfig]);
+  const viewModel = useCatalogViewModel(products, configuredFilters, cartActions, promotionActions);
   const { state, actions } = viewModel;
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [popupPromotion, setPopupPromotion] = useState<StorePromotion | null>(() => {
+    if (typeof window === "undefined") return null;
+    const activePopup = promotions.find((promotion) => promotion.kind === "popup" && (promotion.imageUrls?.length || promotion.imageUrl));
+    return activePopup && !window.sessionStorage.getItem(`promotion-popup:${activePopup.id}`) ? activePopup : null;
+  });
+
+  function closePromotionPopup() {
+    if (popupPromotion) window.sessionStorage.setItem(`promotion-popup:${popupPromotion.id}`, "seen");
+    setPopupPromotion(null);
+  }
+
+  async function contactSeller() {
+    const checkoutWindow = window.open("", "_blank");
+    const fallbackPromotion: PromotionCartValidation = {
+      isValid: false,
+      message: "Promocao nao validada.",
+      originalTotal: viewModel.cartTotal,
+      productDiscount: 0,
+      benefitDiscount: 0,
+      shippingAmount: 0,
+      shippingDiscount: 0,
+      finalTotal: viewModel.cartTotal,
+      hasFreeShipping: false,
+    };
+    const calculatedPromotion = await actions.selectCartBenefit(state.selectedCartBenefitId);
+    const message = createCartWhatsAppMessage({
+      items: state.cartItems,
+      promotion: calculatedPromotion ?? fallbackPromotion,
+      storeUrl: window.location.href,
+    });
+    const whatsappUrl = createWhatsAppUrl(whatsappPhone, message);
+
+    if (!whatsappUrl) {
+      checkoutWindow?.close();
+      return;
+    }
+
+    if (checkoutWindow) {
+      checkoutWindow.opener = null;
+      checkoutWindow.location.replace(whatsappUrl);
+      return;
+    }
+
+    window.location.assign(whatsappUrl);
+  }
 
   const renderFilters = (className?: string) => (
     <CatalogFilters
@@ -50,11 +108,13 @@ export function CatalogExperience({ products, storeName, whatsappPhone, configur
       <CatalogHeader
         storeName={storeName}
         whatsappPhone={whatsappPhone}
+        cartItemCount={state.cartItems.reduce((total, item) => total + item.quantity, 0)}
         query={state.query}
         categories={viewModel.categories}
         activeCategory={state.category}
         onQueryChange={actions.updateQuery}
         onCategoryChange={actions.updateCategory}
+        onOpenCart={() => setIsCartOpen(true)}
       />
 
       <CatalogHero />
@@ -87,16 +147,19 @@ export function CatalogExperience({ products, storeName, whatsappPhone, configur
 
       {state.selectedProduct ? (
         <ProductDrawer
-          whatsappPhone={whatsappPhone}
           product={state.selectedProduct}
           selection={state.selection}
           selectedVariant={viewModel.selectedVariant}
           isSelectionReady={viewModel.isSelectionReady}
-          orderTotal={viewModel.orderTotal}
           formattedOrderTotal={viewModel.formattedOrderTotal}
           onSelectionChange={actions.updateSelection}
           onQuantityChange={actions.updateQuantity}
           onClose={actions.closeProduct}
+          onAddToCart={() => {
+            actions.addCurrentProductToCart();
+            actions.closeProduct();
+            setIsCartOpen(true);
+          }}
         />
       ) : null}
 
@@ -117,15 +180,13 @@ export function CatalogExperience({ products, storeName, whatsappPhone, configur
         </div>
       ) : null}
 
-      <button
-        className="floating-whatsapp fixed bottom-5 right-4 z-30 flex size-14 items-center justify-center rounded-full bg-[var(--color-lime)] text-black shadow-[0_8px_20px_rgba(0,0,0,.22)] md:hidden"
-        onClick={() => window.open(`https://wa.me/${whatsappPhone}`, "_blank", "noopener,noreferrer")}
-        aria-label="Falar no WhatsApp"
-      >
-        <WhatsAppLabel>
-          <span className="sr-only">FALAR NO WHATSAPP</span>
-        </WhatsAppLabel>
+      <button className="fixed bottom-[84px] right-4 z-30 grid size-14 place-items-center rounded-full border-2 border-[var(--color-foreground)] bg-white text-black shadow-[0_8px_20px_rgba(0,0,0,.22)] md:hidden" onClick={() => setIsCartOpen(true)} aria-label="Abrir carrinho">
+        <FiShoppingBag aria-hidden="true" className="text-2xl" />
+        {state.cartItems.length ? <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-black text-[10px] font-black text-white">{state.cartItems.reduce((total, item) => total + item.quantity, 0)}</span> : null}
       </button>
+      <button className="floating-whatsapp fixed bottom-5 right-4 z-30 flex size-14 items-center justify-center rounded-full bg-[var(--color-lime)] text-black shadow-[0_8px_20px_rgba(0,0,0,.22)] md:hidden" onClick={() => window.open(`https://wa.me/${whatsappPhone}`, "_blank", "noopener,noreferrer")} aria-label="Falar no WhatsApp"><WhatsAppLabel><span className="sr-only">FALAR NO WHATSAPP</span></WhatsAppLabel></button>
+      <CatalogCartDrawer isOpen={isCartOpen} items={state.cartItems} availableBenefits={state.availableCartBenefits} selectedBenefitId={state.selectedCartBenefitId} promotionValidation={state.promotionValidation} cartMessage={state.cartMessage} formattedTotal={viewModel.formattedCartTotal} onClose={() => setIsCartOpen(false)} onSelectBenefit={actions.selectCartBenefit} onItemQuantityChange={actions.updateCartItemQuantity} onRemoveItem={actions.removeCartItem} onContactSeller={contactSeller} />
+      <PromotionPopup promotion={popupPromotion} onClose={closePromotionPopup} />
     </div>
   );
 }

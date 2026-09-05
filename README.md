@@ -18,6 +18,8 @@ O cliente poderá visualizar os produtos disponibilizados pelo administrador, ut
 - Upload, recorte e remocao de imagens de produto no Supabase Storage;
 - Configuracoes de nome da loja e WhatsApp, alem dos filtros exibidos no catalogo;
 - Encerramento de sessao administrativa com confirmacao para evitar saidas acidentais.
+- Carrinho local com beneficios de promocoes selecionaveis, descontos automaticos e resumo para o WhatsApp.
+- Area administrativa de promocoes para popup com foto, desconto por produto/categoria/marca, leve-pague, beneficio de carrinho e frete gratis.
 
 ## Telas validadas
 
@@ -922,7 +924,6 @@ Os produtos publicados deverão estar disponíveis para consulta pública enquan
 
 Para manter o projeto simples e focado, os seguintes recursos não fazem parte do MVP:
 
-- Carrinho de compras;
 - Checkout;
 - Pagamento online;
 - PIX integrado;
@@ -931,7 +932,6 @@ Para manter o projeto simples e focado, os seguintes recursos não fazem parte d
 - Histórico de pedidos;
 - Cálculo de frete;
 - Integração com transportadoras;
-- Cupons de desconto;
 - Avaliações;
 - Sistema de favoritos;
 - Cadastro de clientes;
@@ -1171,4 +1171,4 @@ A arquitetura foi planejada de forma modular para permitir futuras expansões, c
 - Aplicação mobile;
 - Novos tipos de produtos.
 
-Entretanto, essas funcionalidades permanecerão fora do escopo inicial para garantir que o MVP seja simples, funcional e adequado ao objetivo proposto.
+Entretanto, essas funcionalidades permanecerão fora do escopo inicial para garantir que o MVP seja simples, funcional e adequado ao objetivo proposto. O carrinho local e as campanhas promocionais foram antecipados para melhorar a montagem do pedido antes do contato pelo WhatsApp; eles nao criam pagamento, pedido ou reserva de estoque.

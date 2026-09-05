@@ -28,11 +28,11 @@ function withTimeout<T>(promise: PromiseLike<T>, message: string): Promise<T> {
 export class AdminAuthenticationSupabaseDataSource implements AdminAuthenticationDataSource {
   constructor(
     private readonly supabaseClient: SupabaseClient,
-    private readonly allowedAdminEmail: string,
+    private readonly allowedAdminEmail?: string,
   ) {}
 
   private isAllowedAdminEmail(email: string) {
-    return email.trim().toLowerCase() === this.allowedAdminEmail.trim().toLowerCase();
+    return email.trim().toLowerCase() === this.allowedAdminEmail?.trim().toLowerCase();
   }
 
   async signIn(credentials: AdminLoginCredentials): Promise<AdminSessionDto> {
@@ -49,7 +49,7 @@ export class AdminAuthenticationSupabaseDataSource implements AdminAuthenticatio
       throw new Error("Usuario autenticado nao retornado pelo Supabase.");
     }
 
-    if (!this.isAllowedAdminEmail(data.user.email)) {
+    if (this.allowedAdminEmail && !this.isAllowedAdminEmail(data.user.email)) {
       await this.supabaseClient.auth.signOut();
       throw new Error("Esta conta nao tem permissao para acessar o painel.");
     }
@@ -75,7 +75,7 @@ export class AdminAuthenticationSupabaseDataSource implements AdminAuthenticatio
       throw new Error("Sessao administrativa nao encontrada.");
     }
 
-    if (!this.isAllowedAdminEmail(user.email)) {
+    if (!this.allowedAdminEmail || !this.isAllowedAdminEmail(user.email)) {
       await this.supabaseClient.auth.signOut();
       throw new Error("Esta conta nao tem permissao para acessar o painel.");
     }

@@ -1,6 +1,9 @@
 type PublicEnv = {
   supabaseUrl: string;
   supabaseAnonKey: string;
+};
+
+export type ServerEnv = PublicEnv & {
   adminEmail: string;
 };
 
@@ -24,6 +27,12 @@ export function getPublicEnv(): PublicEnv {
   return {
     supabaseUrl: normalizeSupabaseProjectUrl(getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL")),
     supabaseAnonKey: getRequiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
-    adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "admin@ezzionimports.com",
+  };
+}
+
+export function getServerEnv(): ServerEnv {
+  return {
+    ...getPublicEnv(),
+    adminEmail: getRequiredEnv("ADMIN_EMAIL", "NEXT_PUBLIC_ADMIN_EMAIL"),
   };
 }

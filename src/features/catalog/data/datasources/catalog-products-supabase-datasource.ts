@@ -9,6 +9,7 @@ type ProductRow = {
   name: string;
   description: string;
   category: string;
+  brand: string;
   base_price: number;
   product_images: Array<{ image_url: string; position: number }>;
   product_variants: Array<{ id: string; size: string; color: string; model: string; price: number; stock_quantity: number; is_active: boolean }>;
@@ -20,7 +21,7 @@ export class CatalogProductsSupabaseDataSource implements CatalogProductsDataSou
   async findAll(): Promise<CatalogProductDto[]> {
     const { data, error } = await this.supabaseClient
       .from("products")
-      .select("id, name, description, category, base_price, product_images(image_url, position), product_variants(id, size, color, model, price, stock_quantity, is_active)")
+      .select("id, name, description, category, brand, base_price, product_images(image_url, position), product_variants(id, size, color, model, price, stock_quantity, is_active)")
       .eq("is_active", true)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -32,6 +33,7 @@ export class CatalogProductsSupabaseDataSource implements CatalogProductsDataSou
         name: product.name,
         description: product.description,
         category: product.category,
+        brand: product.brand,
         color: variants[0]?.color ?? "Sem cor",
         price: Number(product.base_price),
         images: [...(product.product_images ?? [])].sort((left, right) => left.position - right.position).map((image) => image.image_url),

@@ -1,11 +1,12 @@
 import type { StoreSettings } from "@/features/store-settings/domain/entities/store-settings";
 import { administrationTypography } from "@/core/theme/tokens";
+import { formatCurrencyInput, parseCurrencyInput } from "@/core/utils/format/currency-input";
 import type { StoreSettingsSaveStatus } from "@/features/store-settings/presentation/viewmodels/store-settings-view-state";
 
 type StoreSettingsFormProps = {
   settings: StoreSettings;
   saveStatus: StoreSettingsSaveStatus;
-  onFieldChange(field: keyof StoreSettings, value: string): void;
+  onFieldChange(field: keyof StoreSettings, value: string | number): void;
   onSave(): void;
 };
 
@@ -18,6 +19,10 @@ export function StoreSettingsForm({ settings, saveStatus, onFieldChange, onSave 
           <label className="block">
             <span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>NOME DA LOJA</span>
             <input className="h-11 w-full border border-[var(--color-border)] bg-white px-3 outline-none" style={{ fontSize: administrationTypography.body }} value={settings.storeName} placeholder="Nome exibido para clientes" onChange={(event) => onFieldChange("storeName", event.target.value)} />
+          </label>
+          <label className="block">
+            <span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>FRETE FIXO</span>
+            <input className="h-11 w-full border border-[var(--color-border)] bg-white px-3 outline-none" style={{ fontSize: administrationTypography.body }} value={formatCurrencyInput(String(Math.round(settings.fixedShippingAmount * 100)))} inputMode="numeric" onChange={(event) => onFieldChange("fixedShippingAmount", parseCurrencyInput(event.target.value))} />
           </label>
           <label className="block">
             <span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>WHATSAPP DE ATENDIMENTO</span>

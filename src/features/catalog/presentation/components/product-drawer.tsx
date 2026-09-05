@@ -13,42 +13,41 @@ import type {
   ProductVariant,
 } from "@/features/catalog/domain/entities/catalog-product";
 import { OptionGroup } from "@/features/catalog/presentation/components/option-group";
-import { WhatsAppLabel } from "@/features/catalog/presentation/components/whatsapp-label";
 import type { ProductSelection } from "@/features/catalog/presentation/viewmodels/catalog-view-state";
 
 type ProductDrawerProps = {
-  whatsappPhone: string;
   product: CatalogProduct;
   selection: ProductSelection;
   selectedVariant: ProductVariant | null;
   isSelectionReady: boolean;
-  orderTotal: number;
   formattedOrderTotal: string;
   onSelectionChange(selection: Partial<ProductSelection>): void;
   onQuantityChange(quantity: number): void;
   onClose(): void;
+  onAddToCart(): void;
 };
 
 export function ProductDrawer({
-  whatsappPhone,
   product,
   selection,
   selectedVariant,
   isSelectionReady,
-  orderTotal,
   formattedOrderTotal,
   onSelectionChange,
   onQuantityChange,
   onClose,
+  onAddToCart,
 }: ProductDrawerProps) {
   const [imageIndex, setImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const sizes = Array.from(new Set(product.variants.map((variant) => variant.size)));
   const colors = Array.from(new Set(product.variants.map((variant) => variant.color)));
   const models = Array.from(new Set(product.variants.map((variant) => variant.model)));
-  const activePrice = selectedVariant?.price ?? product.price;
+  const variantPrice = selectedVariant?.price ?? product.price;
+  const promotionRatio = product.originalPrice && product.originalPrice > 0 ? product.price / product.originalPrice : 1;
+  const activePrice = variantPrice * promotionRatio;
   const currentImage = product.images[imageIndex] ?? product.images[0];
-  const availableQuantity = selectedVariant?.stockQuantity ?? product.stockQuantity;
+  const availableQuantity = product.stockQuantity;
 
   function previousImage() {
     setImageIndex((current) => (current === 0 ? product.images.length - 1 : current - 1));
@@ -56,29 +55,6 @@ export function ProductDrawer({
 
   function nextImage() {
     setImageIndex((current) => (current + 1) % product.images.length);
-  }
-
-  function contactSeller() {
-    const message = [
-      "Ola! Tenho interesse no seguinte produto:",
-      "",
-      `Produto: ${product.name}`,
-      `Tamanho: ${selection.size}`,
-      `Cor: ${selection.color}`,
-      `Modelo: ${selection.model}`,
-      `Quantidade: ${selection.quantity}`,
-      `Valor unitario: ${formatCurrency(activePrice)}`,
-      `Total: ${formatCurrency(orderTotal)}`,
-      `Link: ${window.location.href}`,
-      "",
-      "Gostaria de saber mais informacões.",
-    ].join("\n");
-
-    window.open(
-      `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
   }
 
   return (
@@ -154,10 +130,10 @@ export function ProductDrawer({
         </div>
 
         <span className="mt-[10px] inline-block bg-[var(--color-lime)] px-[5px] py-[3px] font-black" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
-          {product.badge ?? "NOVO"}
+          {product.promotionLabel ?? product.badge ?? "NOVO"}
         </span>
         <h2 className="my-2 text-xl font-extrabold">{product.name}</h2>
-        <div className="text-2xl font-black">{formatCurrency(activePrice)}</div>
+        <div>{product.originalPrice ? <span className="mr-2 text-[var(--color-muted)] line-through">{formatCurrency(variantPrice)}</span> : null}<strong className="text-2xl font-black">{formatCurrency(activePrice)}</strong></div>
         {product.description?.trim() ? (
           <section className="mt-4 border-y border-[var(--color-border)] py-4">
             <h3 className="font-black text-[var(--color-foreground)]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
@@ -220,20 +196,20 @@ export function ProductDrawer({
         </div>
 
         <p className="my-[22px] text-[var(--color-stock)]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
-          ● {selectedVariant?.stockQuantity === 0 ? "Sem estoque" : "Em estoque"}
+          ● {product.stockQuantity === 0 ? "Sem estoque" : "Em estoque"}
           <span className="ml-[22px] text-[#777]">Envio imediato</span>
         </p>
 
         <button
           disabled={!isSelectionReady}
-          onClick={contactSeller}
+          onClick={onAddToCart}
           className="flex w-full items-center justify-center gap-[9px] bg-[var(--color-lime)] p-[14px] font-black disabled:bg-[#e9e9e9] disabled:text-[#999]"
           style={{ fontSize: catalogTypography.purchaseDrawerItem }}
         >
-          <WhatsAppLabel>{isSelectionReady ? "FALAR NO WHATSAPP" : "SELECIONE AS VARIACOES"}</WhatsAppLabel>
+          {isSelectionReady ? "ADICIONAR AO CARRINHO" : "SELECIONE AS VARIACOES"}
         </button>
 
-        <small className="mt-[10px] block text-center text-[#777]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>Tire duvidas e garanta o seu.</small>
+        <small className="mt-[10px] block text-center text-[#777]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>Revise os itens e fale com a loja pelo carrinho.</small>
 
         <div className="mt-[18px] grid grid-cols-3 border-t border-[#eee] pb-[50px] pt-4 text-center leading-tight" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
           <TrustItem icon={<FiTruck aria-hidden="true" />} label="Envio para todo o Brasil" />

@@ -22,6 +22,10 @@ export class UpdateStoreSettingsUseCase {
       );
     }
 
-    return this.repository.update({ storeName, whatsappPhone });
+    if (!Number.isFinite(settings.fixedShippingAmount) || settings.fixedShippingAmount < 0) {
+      return Promise.resolve(Result.failure({ type: "validation", message: "Informe um valor de frete valido." }));
+    }
+
+    return this.repository.update({ storeName, whatsappPhone, fixedShippingAmount: settings.fixedShippingAmount });
   }
 }

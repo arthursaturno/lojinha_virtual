@@ -12,6 +12,7 @@ const products: AdministrationProduct[] = [
     name: "Camiseta Core Oversized",
     description: "Produto de teste 1",
     category: "Camisetas",
+    brand: "",
     colorLabel: "Preto",
     basePrice: 219.9,
     imageUrls: ["/assets/camiseta-core.png", "/assets/hero-clothing.png", ""],
@@ -43,6 +44,7 @@ const products: AdministrationProduct[] = [
     name: "Bolsa Utility Cross",
     description: "Produto de teste 2",
     category: "Acessorios",
+    brand: "",
     colorLabel: "Preto",
     basePrice: 189.9,
     imageUrls: ["/assets/bolsa-utility.png", "", ""],
@@ -177,6 +179,69 @@ describe("useAdministrationDashboardViewModel", () => {
     expect(result.current.state.pendingImageDeletionUrls).toEqual([
       "https://example.supabase.co/storage/v1/object/public/product-images/photo.webp",
     ]);
+  });
+
+  it("supports five photos and keeps each crop with its photo when reordered", () => {
+    const productWithFivePhotos = [{
+      ...products[0],
+      imageUrls: ["/1.webp", "/2.webp", "/3.webp", "/4.webp", "/5.webp"],
+      imageCrops: [
+        { zoom: 1.1, offsetX: 1, offsetY: 0 },
+        { zoom: 1.2, offsetX: 2, offsetY: 0 },
+        { zoom: 1.3, offsetX: 3, offsetY: 0 },
+        { zoom: 1.4, offsetX: 4, offsetY: 0 },
+        { zoom: 1.5, offsetX: 5, offsetY: 0 },
+      ],
+    }];
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(productWithFivePhotos));
+
+    act(() => {
+      result.current.actions.openExistingProduct("1");
+      result.current.actions.reorderDraftImages(4, 0);
+    });
+
+    expect(result.current.state.draft.imageUrls).toEqual(["/5.webp", "/1.webp", "/2.webp", "/3.webp", "/4.webp"]);
+    expect(result.current.state.draft.imageCrops[0]).toEqual({ zoom: 1.5, offsetX: 5, offsetY: 0 });
+  });
+
+  it("keeps prepared photos local until the product is saved", async () => {
+    const uploadImage = vi.fn(() => Promise.resolve(Result.success({ detailUrl: "https://example.com/photo.webp", thumbnailUrl: "https://example.com/photo.webp" })));
+    const create = vi.fn(() => Promise.resolve(Result.success(products[0])));
+    const update = vi.fn(() => Promise.resolve(Result.success(products[0])));
+    const { result } = renderHook(() => useAdministrationDashboardViewModel(products, {
+      create: { call: create },
+      update: { call: update },
+      delete: { call: vi.fn() },
+      deleteImages: { call: vi.fn(() => Promise.resolve(Result.success(undefined))) },
+      uploadImage: { call: uploadImage },
+    }));
+    const upload = { detail: { bytes: new ArrayBuffer(1), fileName: "photo.webp", contentType: "image/webp" as const } };
+
+    act(() => {
+      result.current.actions.openNewProductDrawer();
+      result.current.actions.prepareDraftImage(0, upload, "blob:prepared-photo");
+    });
+
+    expect(uploadImage).not.toHaveBeenCalled();
+    expect(result.current.state.draft.imageUrls[0]).toBe("blob:prepared-photo");
+
+    await act(async () => {
+      await result.current.actions.saveSelections();
+    });
+
+    expect(uploadImage).toHaveBeenLastCalledWith(expect.objectContaining({ productId: expect.any(String) }));
+
+    act(() => {
+      result.current.actions.openExistingProduct("1");
+      result.current.actions.prepareDraftImage(0, upload, "blob:prepared-existing-photo");
+    });
+    await act(async () => {
+      await result.current.actions.saveSelections();
+    });
+
+    expect(uploadImage).toHaveBeenLastCalledWith(expect.objectContaining({ productId: undefined }));
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledTimes(1);
   });
 
   it("creates a product in local state from the drawer draft", () => {

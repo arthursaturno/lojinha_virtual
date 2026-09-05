@@ -6,7 +6,7 @@ import type { StoreSettings } from "@/features/store-settings/domain/entities/st
 import type { UpdateStoreSettingsUseCase } from "@/features/store-settings/domain/usecases/update-store-settings-usecase";
 import { useStoreSettingsViewModel } from "@/features/store-settings/presentation/viewmodels/use-store-settings-viewmodel";
 
-const settings: StoreSettings = { storeName: "Ezzion Imports", whatsappPhone: "5581999999999" };
+const settings: StoreSettings = { storeName: "Ezzion Imports", whatsappPhone: "5581999999999", fixedShippingAmount: 15 };
 
 function createUseCase(result: ReturnType<typeof Result.success<StoreSettings>> | ReturnType<typeof Result.failure<StoreSettings>>) {
   return { call: vi.fn().mockResolvedValue(result) } as unknown as UpdateStoreSettingsUseCase;

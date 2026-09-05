@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FiArrowLeft, FiBox, FiMenu, FiSettings, FiSliders, FiX } from "react-icons/fi";
+import { FiArrowLeft, FiBox, FiMenu, FiSettings, FiSliders, FiTag, FiX } from "react-icons/fi";
 
 import type { AdminAuthenticationBrowserConfig } from "@/core/di/authentication-browser";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
 import { appRoutes } from "@/core/router/app-routes";
 import { AdminSignOutButton } from "@/core/ui/components/admin-sign-out-button";
 
-export type AdminSidebarSection = "products" | "filters" | "settings";
+export type AdminSidebarSection = "products" | "promotions" | "filters" | "settings";
 
 type AdminSidebarProps = {
   storeName: string;
@@ -35,7 +35,13 @@ const navigationItems = [
     href: appRoutes.adminProducts,
     icon: FiBox,
   },
-    {
+  {
+    label: "Promocoes",
+    section: "promotions" as const,
+    href: appRoutes.adminPromotions,
+    icon: FiTag,
+  },
+  {
     label: "Filtros",
     section: "filters" as const,
     href: appRoutes.adminFilters,

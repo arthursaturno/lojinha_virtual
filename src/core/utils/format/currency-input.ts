@@ -16,3 +16,8 @@ export function formatCurrencyInput(value: string): string {
 
   return `${normalizedInteger},${decimalPart}`;
 }
+
+export function parseCurrencyInput(value: string): number {
+  const digits = sanitizeCurrencyDigits(value);
+  return Number(digits || "0") / 100;
+}

@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 import { getPublicEnv } from "@/core/config/env";
@@ -19,6 +20,18 @@ export async function createSupabaseServerClient() {
           });
         } catch {}
       },
+    },
+  });
+}
+
+export function createSupabasePublicServerClient() {
+  const env = getPublicEnv();
+
+  return createClient(env.supabaseUrl, env.supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
     },
   });
 }

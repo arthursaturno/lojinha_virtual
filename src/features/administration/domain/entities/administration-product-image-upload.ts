@@ -1,4 +1,5 @@
 export type AdministrationProductImageUpload = {
+  productId?: string;
   detail: {
     bytes: ArrayBuffer;
     fileName: string;
