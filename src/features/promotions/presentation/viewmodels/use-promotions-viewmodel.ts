@@ -123,13 +123,16 @@ export function usePromotionsViewModel(initialPromotions: StorePromotion[], prom
     return result.data;
   }
 
-  async function save() {
-    if (!state.draft) return;
+  async function save(imageUrls?: string[]): Promise<boolean> {
+    if (!state.draft) return false;
+    const promotion = imageUrls
+      ? { ...state.draft, imageUrls, imageUrl: imageUrls[0] }
+      : state.draft;
     setState((current) => ({ ...current, saveStatus: "loading", feedbackMessage: undefined }));
-    const result = await promotionActions.save.call(state.draft);
+    const result = await promotionActions.save.call(promotion);
     if (!result.ok) {
       setState((current) => ({ ...current, saveStatus: "failure", feedbackMessage: result.failure.message }));
-      return;
+      return false;
     }
     setState((current) => ({
       ...current,
@@ -140,6 +143,7 @@ export function usePromotionsViewModel(initialPromotions: StorePromotion[], prom
       saveStatus: "idle",
       feedbackMessage: "Promocao salva com sucesso.",
     }));
+    return true;
   }
 
   async function remove() {

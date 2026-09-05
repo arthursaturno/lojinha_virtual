@@ -7,6 +7,8 @@ export type PromotionKind =
   | "coupon"
   | "free_shipping";
 
+export const maximumPromotionPopupImages = 10;
+
 export type PromotionDiscountType = "percentage" | "fixed_amount" | "fixed_price";
 export type PromotionTargetType = "product" | "category" | "brand";
 
