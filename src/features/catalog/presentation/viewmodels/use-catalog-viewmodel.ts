@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatCurrency } from "@/core/utils/format/currency";
+import type { PromotionCartBenefit, PromotionCartValidation } from "@/core/promotions/promotion";
+import type { Result } from "@/core/result/result";
 import type { StoreFilterOptions } from "@/core/store-filters/store-filter-options";
-import {
-  getStorefrontProductPriority,
-  prioritizeStorefrontCategories,
-} from "@/core/store-filters/store-filter-options";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
+import type { CatalogCartItem } from "@/features/catalog/domain/entities/catalog-cart-item";
+import type { GetCatalogCartUseCase } from "@/features/catalog/domain/usecases/get-catalog-cart-usecase";
+import type { SaveCatalogCartUseCase } from "@/features/catalog/domain/usecases/save-catalog-cart-usecase";
 import type {
   CatalogSortOption,
   CatalogViewState,
@@ -25,7 +26,30 @@ function toggleListValue(values: string[], value: string): string[] {
     : [...values, value];
 }
 
-export function useCatalogViewModel(initialProducts: CatalogProduct[], configuredFilters?: StoreFilterOptions) {
+function toPromotionItems(items: CatalogCartItem[]) {
+  return items.map((item) => ({ variantId: item.variantId, quantity: item.quantity }));
+}
+
+type CatalogCartActions = {
+  get: Pick<GetCatalogCartUseCase, "call">;
+  save: Pick<SaveCatalogCartUseCase, "call">;
+};
+
+type CatalogPromotionActions = {
+  listAvailableCartBenefits: {
+    call(input: { items: Array<{ variantId: string; quantity: number }> }): Promise<Result<PromotionCartBenefit[]>>;
+  };
+  validateCartBenefit: {
+    call(input: { promotionId?: string; items: Array<{ variantId: string; quantity: number }> }): Promise<Result<PromotionCartValidation>>;
+  };
+};
+
+export function useCatalogViewModel(
+  initialProducts: CatalogProduct[],
+  configuredFilters?: StoreFilterOptions,
+  cartActions?: CatalogCartActions,
+  promotionActions?: CatalogPromotionActions,
+) {
   const [state, setState] = useState<CatalogViewState>({
     ...initialCatalogViewState,
     status: "success",
@@ -35,12 +59,51 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
   const [colorFilters, setColorFilters] = useState<string[]>([]);
   const [modelFilters, setModelFilters] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(450);
+  const hasCartMutationRef = useRef(false);
+
+  const refreshAvailableCartBenefits = useCallback(async (items: CatalogCartItem[]) => {
+    if (!promotionActions || !items.length) {
+      setState((current) => ({ ...current, availableCartBenefits: [], selectedCartBenefitId: undefined, promotionValidation: undefined }));
+      return;
+    }
+
+    const result = await promotionActions.listAvailableCartBenefits.call({ items: toPromotionItems(items) });
+    if (!result.ok) {
+      setState((current) => ({ ...current, cartMessage: result.failure.message }));
+      return;
+    }
+
+    const validationResult = await promotionActions.validateCartBenefit.call({
+      items: toPromotionItems(items),
+    });
+
+    setState((current) => ({
+      ...current,
+      availableCartBenefits: result.data,
+      selectedCartBenefitId: undefined,
+      promotionValidation: validationResult.ok ? validationResult.data : undefined,
+    }));
+  }, [promotionActions]);
+
+  useEffect(() => {
+    if (!cartActions) return;
+
+    void cartActions.get.call().then((result) => {
+      if (!result.ok) {
+        setState((current) => ({ ...current, cartMessage: result.failure.message }));
+        return;
+      }
+      if (hasCartMutationRef.current) return;
+      setState((current) => ({ ...current, cartItems: result.data }));
+      void refreshAvailableCartBenefits(result.data);
+    });
+  }, [cartActions, refreshAvailableCartBenefits]);
 
   const categories = useMemo(
     () => {
       const configuredCategories = configuredFilters?.category ?? initialProducts.map((product) => product.category);
 
-      return prioritizeStorefrontCategories([...new Set([...configuredCategories.filter(Boolean), allCategory])]);
+      return [...new Set([...configuredCategories.filter(Boolean), allCategory])];
     },
     [configuredFilters, initialProducts],
   );
@@ -68,15 +131,15 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
       const matchesCategory = state.category === allCategory || product.category === state.category;
       const matchesSize =
         sizeFilters.length === 0 ||
-        product.variants.some((variant) => sizeFilters.includes(variant.size) && variant.stockQuantity > 0);
+        product.variants.some((variant) => sizeFilters.includes(variant.size));
       const matchesColor =
         colorFilters.length === 0 ||
-        product.variants.some((variant) => colorFilters.includes(variant.color) && variant.stockQuantity > 0);
+        product.variants.some((variant) => colorFilters.includes(variant.color));
       const matchesModel =
         modelFilters.length === 0 ||
-        product.variants.some((variant) => modelFilters.includes(variant.model) && variant.stockQuantity > 0);
+        product.variants.some((variant) => modelFilters.includes(variant.model));
 
-      return matchesQuery && matchesCategory && matchesSize && matchesColor && matchesModel;
+      return product.stockQuantity > 0 && matchesQuery && matchesCategory && matchesSize && matchesColor && matchesModel;
     });
 
     if (state.sort === "lowest-price") {
@@ -87,9 +150,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
       return [...filtered].sort((first, second) => second.price - first.price);
     }
 
-    return [...filtered].sort(
-      (first, second) => getStorefrontProductPriority(first.category, first.name) - getStorefrontProductPriority(second.category, second.name),
-    );
+    return filtered;
   }, [colorFilters, modelFilters, sizeFilters, state]);
 
   const categoryCount = useMemo(
@@ -135,10 +196,16 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
       state.selection.color &&
       state.selection.model &&
       selectedVariant &&
-      selectedVariant.stockQuantity > 0,
+      (state.selectedProduct?.stockQuantity ?? 0) > 0,
   );
-  const activeUnitPrice = selectedVariant?.price ?? state.selectedProduct?.price ?? 0;
+  const selectedProductBasePrice = state.selectedProduct?.originalPrice ?? state.selectedProduct?.price ?? 0;
+  const selectedProductPromotionRatio = selectedProductBasePrice > 0
+    ? (state.selectedProduct?.price ?? 0) / selectedProductBasePrice
+    : 1;
+  const activeUnitPrice = (selectedVariant?.price ?? state.selectedProduct?.price ?? 0) * selectedProductPromotionRatio;
   const orderTotal = activeUnitPrice * state.selection.quantity;
+  const cartTotal = state.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0);
+  const checkoutTotal = state.promotionValidation ? state.promotionValidation.finalTotal : cartTotal;
 
   function updateQuery(query: string) {
     setState((current) => ({ ...current, query, currentPage: 1 }));
@@ -169,14 +236,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
         ...current.selection,
         ...selection,
       };
-      const nextVariant = current.selectedProduct?.variants.find(
-        (item) =>
-          item.size === nextSelection.size &&
-          item.color === nextSelection.color &&
-          item.model === nextSelection.model &&
-          item.isActive,
-      );
-      const maxQuantity = Math.max(1, nextVariant?.stockQuantity ?? current.selectedProduct?.stockQuantity ?? 1);
+      const maxQuantity = Math.max(1, current.selectedProduct?.stockQuantity ?? 1);
 
       return {
         ...current,
@@ -190,14 +250,7 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
 
   function updateQuantity(quantity: number) {
     setState((current) => {
-      const variant = current.selectedProduct?.variants.find(
-        (item) =>
-          item.size === current.selection.size &&
-          item.color === current.selection.color &&
-          item.model === current.selection.model &&
-          item.isActive,
-      );
-      const maxQuantity = Math.max(1, variant?.stockQuantity ?? current.selectedProduct?.stockQuantity ?? 1);
+      const maxQuantity = Math.max(1, current.selectedProduct?.stockQuantity ?? 1);
       const nextQuantity = Math.min(Math.max(1, quantity), maxQuantity);
 
       return {
@@ -208,6 +261,84 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
         },
       };
     });
+  }
+
+  function persistCart(items: CatalogCartItem[]) {
+    hasCartMutationRef.current = true;
+    if (!cartActions) return;
+
+    void cartActions.save.call(items).then((result) => {
+      if (!result.ok) {
+        setState((current) => ({ ...current, cartMessage: result.failure.message }));
+      }
+    });
+  }
+
+  function addCurrentProductToCart() {
+    const product = state.selectedProduct;
+    if (!product || !selectedVariant || !isSelectionReady) return;
+    const itemId = `${product.id}:${selectedVariant.id}`;
+    const cartItem: CatalogCartItem = {
+      id: itemId,
+      productId: product.id,
+      variantId: selectedVariant.id,
+      name: product.name,
+      imageUrl: product.images[0],
+      size: state.selection.size,
+      color: state.selection.color,
+      model: state.selection.model,
+      unitPrice: activeUnitPrice,
+      quantity: state.selection.quantity,
+      availableQuantity: product.stockQuantity,
+    };
+    const currentItem = state.cartItems.find((item) => item.id === itemId);
+    const nextItems = currentItem
+      ? state.cartItems.map((item) => item.id === itemId ? { ...item, quantity: Math.min(item.availableQuantity, item.quantity + cartItem.quantity) } : item)
+      : [...state.cartItems, cartItem];
+    setState((current) => ({ ...current, cartItems: nextItems, promotionValidation: undefined, cartMessage: "Produto adicionado ao carrinho." }));
+    persistCart(nextItems);
+    void refreshAvailableCartBenefits(nextItems);
+  }
+
+  function updateCartItemQuantity(itemId: string, quantity: number) {
+    const nextItems = state.cartItems.map((item) => item.id === itemId ? { ...item, quantity: Math.min(item.availableQuantity, Math.max(1, quantity)) } : item);
+    setState((current) => ({ ...current, cartItems: nextItems, promotionValidation: undefined }));
+    persistCart(nextItems);
+    void refreshAvailableCartBenefits(nextItems);
+  }
+
+  function removeCartItem(itemId: string) {
+    const nextItems = state.cartItems.filter((item) => item.id !== itemId);
+    setState((current) => ({ ...current, cartItems: nextItems, promotionValidation: undefined }));
+    persistCart(nextItems);
+    void refreshAvailableCartBenefits(nextItems);
+  }
+
+  function clearCartMessage() {
+    setState((current) => ({ ...current, cartMessage: undefined }));
+  }
+
+  async function selectCartBenefit(promotionId?: string): Promise<PromotionCartValidation | null> {
+    if (!promotionActions) {
+      setState((current) => ({ ...current, cartMessage: "As promocoes ainda nao estao configuradas." }));
+      return null;
+    }
+    const result = await promotionActions.validateCartBenefit.call({
+      promotionId,
+      items: toPromotionItems(state.cartItems),
+    });
+    if (!result.ok) {
+      setState((current) => ({ ...current, cartMessage: result.failure.message }));
+      return null;
+    }
+    const promotionValidation = result.data;
+    setState((current) => ({
+      ...current,
+      selectedCartBenefitId: promotionValidation.isValid ? promotionId : undefined,
+      promotionValidation,
+      cartMessage: promotionValidation.message,
+    }));
+    return promotionValidation;
   }
 
   function openProduct(product: CatalogProduct) {
@@ -281,6 +412,9 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
     activeUnitPrice,
     orderTotal,
     formattedOrderTotal: formatCurrency(orderTotal),
+    cartTotal,
+    checkoutTotal,
+    formattedCartTotal: formatCurrency(checkoutTotal),
     formattedMaxPrice: formatCurrency(maxPrice),
     actions: {
       updateQuery,
@@ -289,6 +423,11 @@ export function useCatalogViewModel(initialProducts: CatalogProduct[], configure
       updateCurrentPage,
       updateSelection,
       updateQuantity,
+      addCurrentProductToCart,
+      updateCartItemQuantity,
+      removeCartItem,
+      clearCartMessage,
+      selectCartBenefit,
       openProduct,
       closeProduct,
       clearFilters,

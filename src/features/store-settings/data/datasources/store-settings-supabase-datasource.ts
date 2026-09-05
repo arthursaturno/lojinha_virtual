@@ -14,7 +14,7 @@ export class StoreSettingsSupabaseDataSource implements StoreSettingsDataSource 
   async get(): Promise<StoreSettingsDto | null> {
     const { data, error } = await this.supabaseClient
       .from("store_settings")
-      .select("store_name, whatsapp_phone")
+      .select("owner_id, store_name, whatsapp_phone")
       .eq("id", 1)
       .maybeSingle();
 
@@ -22,7 +22,16 @@ export class StoreSettingsSupabaseDataSource implements StoreSettingsDataSource 
       throw new Error(error.message);
     }
 
-    return data;
+    if (!data) return null;
+
+    const { data: shippingData, error: shippingError } = await this.supabaseClient
+      .from("store_shipping_settings")
+      .select("fixed_shipping_amount")
+      .eq("owner_id", data.owner_id ?? undefined)
+      .maybeSingle();
+
+    if (shippingError) throw new Error(shippingError.message);
+    return { store_name: data.store_name, whatsapp_phone: data.whatsapp_phone, fixed_shipping_amount: Number(shippingData?.fixed_shipping_amount ?? 0) };
   }
 
   async upsert(settings: StoreSettings): Promise<StoreSettingsDto> {
@@ -54,7 +63,8 @@ export class StoreSettingsSupabaseDataSource implements StoreSettingsDataSource 
         throw new Error(error?.message ?? "Nao foi possivel salvar as configuracoes.");
       }
 
-      return data;
+      await this.upsertShipping(userData.user.id, settings.fixedShippingAmount);
+      return { ...data, fixed_shipping_amount: settings.fixedShippingAmount };
     }
 
     const { data, error } = await this.supabaseClient
@@ -72,6 +82,15 @@ export class StoreSettingsSupabaseDataSource implements StoreSettingsDataSource 
       throw new Error(error?.message ?? "Nao foi possivel salvar as configuracoes.");
     }
 
-    return data;
+    await this.upsertShipping(userData.user.id, settings.fixedShippingAmount);
+    return { ...data, fixed_shipping_amount: settings.fixedShippingAmount };
+  }
+
+  private async upsertShipping(ownerId: string, fixedShippingAmount: number): Promise<void> {
+    const { error } = await this.supabaseClient
+      .from("store_shipping_settings")
+      .upsert({ owner_id: ownerId, fixed_shipping_amount: fixedShippingAmount }, { onConflict: "owner_id" });
+
+    if (error) throw new Error(error.message);
   }
 }

@@ -42,6 +42,7 @@ function createDraftFromProduct(product: AdministrationProduct | undefined): Adm
     name: product?.name ?? "",
     description: product?.description ?? "",
     category: product?.category ?? "",
+    brand: product?.brand ?? "",
     basePrice: product ? formatCurrencyInput(String(Math.round(product.basePrice * 100))) : "",
     isActive: product?.isActive ?? true,
     totalStockQuantity: product?.totalStockQuantity ?? 0,
@@ -100,6 +101,7 @@ function createProductFromDraft(
     name: draft.name.trim() || "Novo produto",
     description: draft.description.trim(),
     category: draft.category || "Sem categoria",
+    brand: draft.brand.trim(),
     colorLabel: draft.colors[0] ?? "Sem cor",
     basePrice: price,
     imageUrls: draft.imageUrls.filter(Boolean),
@@ -228,7 +230,7 @@ export function useAdministrationDashboardViewModel(
     }));
   }
 
-  function updateDraftField<K extends "name" | "category" | "description">(
+  function updateDraftField<K extends "name" | "category" | "brand" | "description">(
     field: K,
     value: AdministrationProductDraft[K],
   ) {

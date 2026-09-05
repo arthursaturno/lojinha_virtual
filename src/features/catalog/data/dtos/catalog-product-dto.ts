@@ -19,6 +19,7 @@ export type CatalogProductDto = {
   name: string;
   description?: string;
   category: string;
+  brand?: string;
   color: string;
   price: number;
   images: string[];
@@ -46,6 +47,7 @@ export function catalogProductToDomain(dto: CatalogProductDto): CatalogProduct {
     name: dto.name,
     description: dto.description,
     category: dto.category,
+    brand: dto.brand,
     color: dto.color,
     price: dto.price,
     images: dto.images,

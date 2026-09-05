@@ -93,6 +93,7 @@ export type AdministrationProductDraft = {
   name: string;
   description: string;
   category: string;
+  brand: string;
   basePrice: string;
   isActive: boolean;
   totalStockQuantity: number;
@@ -124,6 +125,7 @@ export const emptyAdministrationProductDraft: AdministrationProductDraft = {
   name: "",
   description: "",
   category: "",
+  brand: "",
   basePrice: "",
   isActive: true,
   totalStockQuantity: 0,

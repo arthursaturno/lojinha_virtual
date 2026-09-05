@@ -15,6 +15,7 @@ export type AdministrationProduct = {
   name: string;
   description: string;
   category: string;
+  brand: string;
   colorLabel: string;
   basePrice: number;
   imageUrls: string[];

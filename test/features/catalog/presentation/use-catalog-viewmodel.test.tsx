@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import { Result } from "@/core/result/result";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import { useCatalogViewModel } from "@/features/catalog/presentation/viewmodels/use-catalog-viewmodel";
 
@@ -80,25 +81,6 @@ describe("useCatalogViewModel", () => {
     expect(result.current.filteredProducts).toHaveLength(2);
   });
 
-  it("shows Camisas, Shorts and Bermudas before other products when sorting by recent", () => {
-    const prioritizedProducts = [
-      { ...products[1], id: "accessories", category: "Acessorios" },
-      { ...products[1], id: "bermuda", category: "Bermudas" },
-      { ...products[1], id: "camisa", category: "Camisa" },
-      { ...products[1], id: "camisa-time", name: "Camisa polo de time Flamengo", category: "Camisa" },
-      { ...products[1], id: "shorts", category: "Shorts" },
-    ];
-    const { result } = renderHook(() => useCatalogViewModel(prioritizedProducts));
-
-    expect(result.current.filteredProducts.map((product) => product.category)).toEqual([
-      "Camisa",
-      "Shorts",
-      "Bermudas",
-      "Acessorios",
-      "Camisa",
-    ]);
-  });
-
   it("enables checkout contact only after required variation selection", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 
@@ -126,7 +108,7 @@ describe("useCatalogViewModel", () => {
     expect(result.current.orderTotal).toBeCloseTo(659.7);
   });
 
-  it("limits quantity to selected variant stock", () => {
+  it("keeps the selected quantity when changing product details", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 
     act(() => result.current.actions.openProduct(products[0]));
@@ -136,7 +118,42 @@ describe("useCatalogViewModel", () => {
     act(() => result.current.actions.updateQuantity(5));
     act(() => result.current.actions.updateSelection({ size: "M" }));
 
-    expect(result.current.state.selection.quantity).toBe(2);
+    expect(result.current.state.selection.quantity).toBe(5);
+  });
+
+  it("keeps colors and sizes selectable when stock is managed for the whole product", () => {
+    const productWithDistributedStock: CatalogProduct = {
+      ...products[0],
+      stockQuantity: 5,
+      variants: [
+        { ...products[0].variants[0], color: "Azul", stockQuantity: 0 },
+        { ...products[0].variants[1], color: "Preto", stockQuantity: 5 },
+      ],
+    };
+    const { result } = renderHook(() => useCatalogViewModel([productWithDistributedStock]));
+
+    act(() => result.current.actions.openProduct(productWithDistributedStock));
+    act(() => result.current.actions.updateSelection({ size: "G", color: "Azul", model: "Oversized" }));
+
+    expect(result.current.isSelectionReady).toBe(true);
+    act(() => result.current.actions.updateQuantity(5));
+    expect(result.current.state.selection.quantity).toBe(5);
+  });
+
+  it("adds the selected variation to the persisted cart", async () => {
+    const save = vi.fn(() => Promise.resolve(Result.success(undefined)));
+    const { result } = renderHook(() => useCatalogViewModel(products, undefined, {
+      get: { call: () => Promise.resolve(Result.success([])) },
+      save: { call: save },
+    }));
+
+    act(() => result.current.actions.openProduct(products[0]));
+    act(() => result.current.actions.updateSelection({ size: "G", color: "Preto", model: "Oversized" }));
+    act(() => result.current.actions.updateQuantity(2));
+    act(() => result.current.actions.addCurrentProductToCart());
+
+    expect(result.current.state.cartItems).toMatchObject([{ variantId: "1-g-preto-oversized", quantity: 2 }]);
+    expect(save).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ quantity: 2 })]));
   });
 
   it("paginates catalog products with ten items per page", () => {

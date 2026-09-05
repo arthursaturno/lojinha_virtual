@@ -39,9 +39,9 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
             className="object-cover transition-transform duration-200 hover:scale-[1.025]"
           />
         ) : null}
-        {product.badge ? (
+        {product.promotionLabel ?? product.badge ? (
           <span className="absolute bottom-[5px] left-[5px] bg-[var(--color-lime)] px-[5px] py-[3px] font-black" style={{ fontSize: catalogTypography.listingItem }}>
-            {product.badge}
+            {product.promotionLabel ?? product.badge}
           </span>
         ) : null}
       </div>
@@ -68,6 +68,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
             ) : null}
           </div>
         </div>
+        {product.originalPrice ? <span className="mr-2 text-[var(--color-muted)] line-through" style={{ fontSize: catalogTypography.listingItem }}>{formatCurrency(product.originalPrice)}</span> : null}
         <strong style={{ fontSize: catalogTypography.listingItem }}>{formatCurrency(product.price)}</strong>
         <small className="mt-[7px] block font-extrabold text-[var(--color-stock)]" style={{ fontSize: catalogTypography.listingItem }}>EM ESTOQUE</small>
       </div>

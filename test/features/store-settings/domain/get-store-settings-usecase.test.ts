@@ -5,7 +5,7 @@ import type { StoreSettings } from "@/features/store-settings/domain/entities/st
 import type { StoreSettingsRepository } from "@/features/store-settings/domain/repositories/store-settings-repository";
 import { GetStoreSettingsUseCase } from "@/features/store-settings/domain/usecases/get-store-settings-usecase";
 
-const settings: StoreSettings = { storeName: "Ezzion Imports", whatsappPhone: "5581999999999" };
+const settings: StoreSettings = { storeName: "Ezzion Imports", whatsappPhone: "5581999999999", fixedShippingAmount: 15 };
 
 describe("GetStoreSettingsUseCase", () => {
   it("returns the settings from repository", async () => {

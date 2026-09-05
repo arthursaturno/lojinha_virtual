@@ -1,4 +1,6 @@
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
+import type { CatalogCartItem } from "@/features/catalog/domain/entities/catalog-cart-item";
+import type { PromotionCartBenefit, PromotionCartValidation } from "@/core/promotions/promotion";
 
 export type CatalogStatus = "initial" | "loading" | "success" | "failure";
 
@@ -20,6 +22,11 @@ export type CatalogViewState = {
   selection: ProductSelection;
   sort: CatalogSortOption;
   currentPage: number;
+  cartItems: CatalogCartItem[];
+  cartMessage?: string;
+  availableCartBenefits: PromotionCartBenefit[];
+  selectedCartBenefitId?: string;
+  promotionValidation?: PromotionCartValidation;
   errorMessage?: string;
 };
 
@@ -37,4 +44,6 @@ export const initialCatalogViewState: CatalogViewState = {
   },
   sort: "recent",
   currentPage: 1,
+  cartItems: [],
+  availableCartBenefits: [],
 };

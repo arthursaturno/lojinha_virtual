@@ -9,7 +9,6 @@ export default function AdminLoginRoute() {
       supabaseConfig={{
         supabaseUrl: env.supabaseUrl,
         supabaseAnonKey: env.supabaseAnonKey,
-        adminEmail: env.adminEmail,
       }}
     />
   );

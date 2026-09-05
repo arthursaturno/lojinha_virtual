@@ -2,10 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { AuthApiError } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { getPublicEnv } from "@/core/config/env";
+import { getServerEnv } from "@/core/config/env";
 
-function clearInvalidAuthCookies(request: NextRequest): NextResponse {
-  const response = NextResponse.next({ request });
+function clearAuthCookies(request: NextRequest, response: NextResponse): NextResponse {
 
   request.cookies
     .getAll()
@@ -15,8 +14,16 @@ function clearInvalidAuthCookies(request: NextRequest): NextResponse {
   return response;
 }
 
+function redirectToAdminLogin(request: NextRequest): NextResponse {
+  const loginUrl = request.nextUrl.clone();
+  loginUrl.pathname = "/admin/login";
+  loginUrl.search = "";
+
+  return clearAuthCookies(request, NextResponse.redirect(loginUrl));
+}
+
 export async function refreshSupabaseSession(request: NextRequest): Promise<NextResponse> {
-  const env = getPublicEnv();
+  const env = getServerEnv();
   let response = NextResponse.next({ request });
 
   const supabaseClient = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
@@ -33,10 +40,19 @@ export async function refreshSupabaseSession(request: NextRequest): Promise<Next
   });
 
   try {
-    await supabaseClient.auth.getClaims();
+    const { data } = await supabaseClient.auth.getClaims();
+    const email = typeof data?.claims?.email === "string" ? data.claims.email : "";
+    const isAdmin = email.toLowerCase() === env.adminEmail.trim().toLowerCase();
+    const isLoginRoute = request.nextUrl.pathname === "/admin/login";
+
+    if (!isLoginRoute && !isAdmin) {
+      return redirectToAdminLogin(request);
+    }
   } catch (error) {
     if (error instanceof AuthApiError && error.code === "refresh_token_not_found") {
-      return clearInvalidAuthCookies(request);
+      return request.nextUrl.pathname === "/admin/login"
+        ? clearAuthCookies(request, NextResponse.next({ request }))
+        : redirectToAdminLogin(request);
     }
 
     throw error;

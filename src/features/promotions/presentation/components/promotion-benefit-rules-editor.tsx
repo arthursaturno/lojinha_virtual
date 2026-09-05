@@ -1,0 +1,24 @@
+"use client";
+
+import { FiPlus, FiTrash2 } from "react-icons/fi";
+
+import type { PromotionBenefitRule } from "@/core/promotions/promotion";
+import { administrationTypography } from "@/core/theme/tokens";
+import { formatCurrencyInput, parseCurrencyInput } from "@/core/utils/format/currency-input";
+
+type PromotionBenefitRulesEditorProps = {
+  rules: PromotionBenefitRule[];
+  onChange(rules: PromotionBenefitRule[]): void;
+};
+
+function createRule(): PromotionBenefitRule {
+  return { kind: "cart_benefit", title: "", description: "", minimumAmount: 0, discountType: "percentage", discountValue: 10 };
+}
+
+export function PromotionBenefitRulesEditor({ rules, onChange }: PromotionBenefitRulesEditorProps) {
+  function update(index: number, patch: Partial<PromotionBenefitRule>) {
+    onChange(rules.map((rule, ruleIndex) => ruleIndex === index ? { ...rule, ...patch } : rule));
+  }
+
+  return <section className="border border-[var(--color-border)] bg-white p-4"><div className="flex items-center justify-between gap-3"><strong className="font-black" style={{ fontSize: administrationTypography.sectionTitle }}>BENEFICIOS DO CARRINHO</strong><button type="button" onClick={() => onChange([...rules, createRule()])} className="flex h-9 items-center gap-2 bg-[var(--color-lime)] px-3 font-black" style={{ fontSize: administrationTypography.action }}><FiPlus aria-hidden="true" />ADICIONAR ITEM</button></div><div className="mt-3 grid gap-4">{rules.map((rule, index) => <div key={rule.id ?? index} className="border border-[var(--color-border)] p-3"><div className="mb-3 flex justify-between"><strong className="font-black" style={{ fontSize: administrationTypography.body }}>ITEM {index + 1}</strong><button type="button" onClick={() => onChange(rules.filter((_, ruleIndex) => ruleIndex !== index))} disabled={rules.length === 1} className="grid size-9 place-items-center border border-[var(--color-error)] text-[var(--color-error)] disabled:opacity-40" aria-label={`Remover item ${index + 1}`}><FiTrash2 aria-hidden="true" /></button></div><div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>BENEFICIO</span><select value={rule.kind} onChange={(event) => update(index, { kind: event.target.value as PromotionBenefitRule["kind"] })} className="h-11 w-full border border-[var(--color-border)] px-3"><option value="cart_benefit">DESCONTO NO CARRINHO</option><option value="free_shipping">FRETE GRATIS</option></select></label><label><span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>COMPRA MINIMA</span><input inputMode="numeric" value={formatCurrencyInput(String(Math.round(rule.minimumAmount * 100)))} onChange={(event) => update(index, { minimumAmount: parseCurrencyInput(event.target.value) })} className="h-11 w-full border border-[var(--color-border)] px-3" /></label></div><label className="mt-4 block"><span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>TITULO PUBLICO</span><input value={rule.title} onChange={(event) => update(index, { title: event.target.value })} className="h-11 w-full border border-[var(--color-border)] px-3" /></label><label className="mt-4 block"><span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>DESCRICAO</span><input value={rule.description} onChange={(event) => update(index, { description: event.target.value })} className="h-11 w-full border border-[var(--color-border)] px-3" /></label>{rule.kind === "cart_benefit" ? <div className="mt-4 grid gap-4 sm:grid-cols-2"><label><span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>TIPO</span><select value={rule.discountType} onChange={(event) => update(index, { discountType: event.target.value as PromotionBenefitRule["discountType"] })} className="h-11 w-full border border-[var(--color-border)] px-3"><option value="percentage">PORCENTAGEM</option><option value="fixed_amount">VALOR EM REAIS</option></select></label><label><span className="mb-2 block font-black text-[var(--color-muted)]" style={{ fontSize: administrationTypography.fieldLabel }}>DESCONTO</span><input inputMode="numeric" value={formatCurrencyInput(String(Math.round(rule.discountValue * 100)))} onChange={(event) => update(index, { discountValue: parseCurrencyInput(event.target.value) })} className="h-11 w-full border border-[var(--color-border)] px-3" /></label></div> : <p className="mt-4 text-[var(--color-muted)]" style={{ fontSize: administrationTypography.body }}>O valor do frete padrao e configurado em Configuracoes da loja.</p>}</div>)}</div></section>;
+}

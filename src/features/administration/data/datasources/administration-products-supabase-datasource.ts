@@ -21,6 +21,7 @@ type ProductRow = {
   name: string;
   description: string;
   category: string;
+  brand: string;
   base_price: number;
   is_active: boolean;
   product_images: Array<{
@@ -59,6 +60,7 @@ function toDto(row: ProductRow): AdministrationProductDto {
     name: row.name,
     description: row.description,
     category: row.category,
+    brand: row.brand,
     color_label: variants[0]?.color ?? "Sem cor",
     base_price: Number(row.base_price),
     image_urls: [...(row.product_images ?? [])].sort((left, right) => left.position - right.position).map((image) => image.image_url),
@@ -86,7 +88,7 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
   async findAll(): Promise<AdministrationProductDto[]> {
     const { data, error } = await this.supabaseClient
       .from("products")
-      .select("id, name, description, category, base_price, is_active, product_images(image_url, position, crop_zoom, crop_offset_x, crop_offset_y), product_variants(id, size, color, model, price, stock_quantity, is_active)")
+      .select("id, name, description, category, brand, base_price, is_active, product_images(image_url, position, crop_zoom, crop_offset_x, crop_offset_y), product_variants(id, size, color, model, price, stock_quantity, is_active)")
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
@@ -96,7 +98,7 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
   async create(product: AdministrationProduct): Promise<AdministrationProductDto> {
     const { data: userData, error: userError } = await this.supabaseClient.auth.getUser();
     if (userError || !userData.user) throw new Error("Sessao administrativa nao encontrada.");
-    const { data, error } = await this.supabaseClient.from("products").insert({ id: product.id, owner_id: userData.user.id, name: product.name, description: product.description, category: product.category, base_price: product.basePrice, is_active: product.isActive }).select("id").single();
+    const { data, error } = await this.supabaseClient.from("products").insert({ id: product.id, owner_id: userData.user.id, name: product.name, description: product.description, category: product.category, brand: product.brand, base_price: product.basePrice, is_active: product.isActive }).select("id").single();
     if (error || !data) throw new Error(error?.message ?? "Nao foi possivel criar o produto.");
     await this.replaceRelations(data.id as string, product);
     return this.findOne(data.id as string);
@@ -109,6 +111,7 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
         name: product.name,
         description: product.description,
         category: product.category,
+        brand: product.brand,
         base_price: product.basePrice,
         is_active: product.isActive,
       })
@@ -227,7 +230,7 @@ export class AdministrationProductsSupabaseDataSource implements AdministrationP
   }
 
   private async findOne(productId: string): Promise<AdministrationProductDto> {
-    const { data, error } = await this.supabaseClient.from("products").select("id, name, description, category, base_price, is_active, product_images(image_url, position, crop_zoom, crop_offset_x, crop_offset_y), product_variants(id, size, color, model, price, stock_quantity, is_active)").eq("id", productId).single();
+    const { data, error } = await this.supabaseClient.from("products").select("id, name, description, category, brand, base_price, is_active, product_images(image_url, position, crop_zoom, crop_offset_x, crop_offset_y), product_variants(id, size, color, model, price, stock_quantity, is_active)").eq("id", productId).single();
     if (error || !data) throw new Error(error?.message ?? "Produto nao encontrado.");
     return toDto(data as unknown as ProductRow);
   }

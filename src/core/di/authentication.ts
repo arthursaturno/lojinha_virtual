@@ -6,13 +6,13 @@ import { GetCurrentAdminSessionUseCase } from "@/features/authentication/domain/
 import { SignInAdminUseCase } from "@/features/authentication/domain/usecases/sign-in-admin-usecase";
 import { SignOutAdminUseCase } from "@/features/authentication/domain/usecases/sign-out-admin-usecase";
 
-function createAdminAuthenticationRepository(supabaseClient: SupabaseClient, adminEmail: string) {
+function createAdminAuthenticationRepository(supabaseClient: SupabaseClient, adminEmail?: string) {
   const dataSource = new AdminAuthenticationSupabaseDataSource(supabaseClient, adminEmail);
 
   return new AdminAuthenticationRepositoryImpl(dataSource);
 }
 
-export function createSignInAdminUseCaseWithClient(supabaseClient: SupabaseClient, adminEmail: string) {
+export function createSignInAdminUseCaseWithClient(supabaseClient: SupabaseClient, adminEmail?: string) {
   const repository = createAdminAuthenticationRepository(supabaseClient, adminEmail);
 
   return new SignInAdminUseCase(repository);
@@ -24,7 +24,7 @@ export function createGetCurrentAdminSessionUseCaseWithClient(supabaseClient: Su
   return new GetCurrentAdminSessionUseCase(repository);
 }
 
-export function createSignOutAdminUseCaseWithClient(supabaseClient: SupabaseClient, adminEmail: string) {
+export function createSignOutAdminUseCaseWithClient(supabaseClient: SupabaseClient, adminEmail?: string) {
   const repository = createAdminAuthenticationRepository(supabaseClient, adminEmail);
 
   return new SignOutAdminUseCase(repository);

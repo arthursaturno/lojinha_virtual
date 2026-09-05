@@ -12,7 +12,7 @@ export class StoreSettingsRepositoryImpl implements StoreSettingsRepository {
       const dto = await this.dataSource.get();
 
       return Result.success<StoreSettings>(
-        dto ? storeSettingsToDomain(dto) : { storeName: "Ezzion Imports", whatsappPhone: "5581999999999" },
+        dto ? storeSettingsToDomain(dto) : { storeName: "Ezzion Imports", whatsappPhone: "5581999999999", fixedShippingAmount: 0 },
       );
     } catch {
       return Result.failure<StoreSettings>({

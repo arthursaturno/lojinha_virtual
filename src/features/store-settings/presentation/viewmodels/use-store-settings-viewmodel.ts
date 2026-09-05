@@ -18,7 +18,7 @@ export function useStoreSettingsViewModel(
     toast: null,
   });
 
-  function updateField(field: keyof StoreSettings, value: string) {
+  function updateField(field: keyof StoreSettings, value: string | number) {
     setState((current) => ({
       settings: { ...current.settings, [field]: value },
       saveStatus: "idle",

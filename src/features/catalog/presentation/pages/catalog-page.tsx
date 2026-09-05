@@ -1,15 +1,20 @@
 import { createCatalogProductsUseCaseWithClient } from "@/core/di/catalog";
+import { createGetActivePromotionsUseCaseWithClient } from "@/core/di/promotions";
+import { getProductPromotion } from "@/core/promotions/get-product-promotion";
 import { createGetStoreSettingsUseCaseWithClient } from "@/core/di/store-settings";
-import { createSupabasePublicServerClient } from "@/core/network/supabase/server-client";
+import { createSupabaseServerClient } from "@/core/network/supabase/server-client";
+import { getPublicEnv } from "@/core/config/env";
 import { createDefaultStoreFilterOptions, type StoreFilterOptions, type StoreFilterType } from "@/core/store-filters/store-filter-options";
 import { CatalogExperience } from "@/features/catalog/presentation/pages/catalog-experience";
 
 export async function CatalogPage() {
-  const supabaseClient = createSupabasePublicServerClient();
-  const [productsResult, storeSettingsResult, filterOptionsResult] = await Promise.all([
+  const env = getPublicEnv();
+  const supabaseClient = await createSupabaseServerClient();
+  const [productsResult, storeSettingsResult, filterOptionsResult, promotionsResult] = await Promise.all([
     createCatalogProductsUseCaseWithClient(supabaseClient).call(),
     createGetStoreSettingsUseCaseWithClient(supabaseClient).call(),
     supabaseClient.from("store_filter_options").select("filter_type, value, position").order("position"),
+    createGetActivePromotionsUseCaseWithClient(supabaseClient).call(),
   ]);
 
   if (!productsResult.ok) {
@@ -34,5 +39,10 @@ export async function CatalogPage() {
       configuredFilters[type] = filterOptionsResult.data.filter((item) => item.filter_type === type).map((item) => item.value);
     });
   }
-  return <CatalogExperience products={productsResult.data} storeName={storeSettingsResult.data.storeName} whatsappPhone={storeSettingsResult.data.whatsappPhone} configuredFilters={configuredFilters} />;
+  const promotions = promotionsResult.ok ? promotionsResult.data : [];
+  const products = productsResult.data.map((product) => {
+    const promotion = getProductPromotion(product.id, product.price, promotions, { category: product.category, brand: product.brand });
+    return promotion.promotionalPrice ? { ...product, originalPrice: product.price, price: promotion.promotionalPrice, promotionLabel: promotion.label } : { ...product, promotionLabel: promotion.label };
+  });
+  return <CatalogExperience products={products} storeName={storeSettingsResult.data.storeName} whatsappPhone={storeSettingsResult.data.whatsappPhone} configuredFilters={configuredFilters} promotions={promotions} supabaseConfig={{ supabaseUrl: env.supabaseUrl, supabaseAnonKey: env.supabaseAnonKey }} />;
 }

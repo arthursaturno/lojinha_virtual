@@ -6,6 +6,7 @@ import { FiChevronLeft, FiChevronRight, FiCrop, FiImage, FiMinus, FiMove, FiPlus
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { administrationLayout, administrationTypography } from "@/core/theme/tokens";
+import { ImageCropModal } from "@/core/ui/components/image-crop-modal";
 import {
   createProductImageUpload,
   getProductImageCropOffsetPercentage,
@@ -31,7 +32,7 @@ type AdministrationProductDrawerProps = {
   draft: AdministrationProductDraft;
   onClose(): void;
   onSave(): void;
-  onFieldChange(field: "name" | "category" | "description", value: string): void;
+  onFieldChange(field: "name" | "category" | "brand" | "description", value: string): void;
   onPriceChange(value: string): void;
   onIncrementStock(): void;
   onDecrementStock(): void;
@@ -433,6 +434,12 @@ export function AdministrationProductDrawer({
               placeholder="Explique tecido, caimento, detalhes e ocasiao de uso."
               onChange={(value) => onFieldChange("description", value)}
             />
+            <TextField
+              label="MARCA"
+              value={draft.brand}
+              placeholder="Ex.: Nike, Reserva, Hering"
+              onChange={(value) => onFieldChange("brand", value)}
+            />
 
             <SingleSelectGroup
               label="CATEGORIA"
@@ -711,7 +718,7 @@ export function AdministrationProductDrawer({
         </div>
       </aside>
 
-      {cropModalState ? (
+      {cropModalState ? (false ? (
         <div
           className="absolute inset-0 z-10 overflow-y-auto bg-black/60 p-4 overscroll-contain"
           onMouseDown={handleCloseCropModal}
@@ -733,7 +740,7 @@ export function AdministrationProductDrawer({
                   className="mt-1 font-black text-[var(--color-foreground)]"
                   style={{ fontSize: "clamp(1.25rem, 1.16rem + 0.35vw, 1.5rem)" }}
                 >
-                  Recorte da foto {cropModalState.index + 1}
+                  Recorte da foto {cropModalState!.index + 1}
                 </h3>
               </div>
               <button
@@ -752,13 +759,13 @@ export function AdministrationProductDrawer({
                 style={{ aspectRatio: catalogProductImageAspectRatio }}
               >
                 <Image
-                  src={cropModalState.imageUrl}
-                  alt={`Recorte da foto ${cropModalState.index + 1}`}
+                  src={cropModalState!.imageUrl}
+                  alt={`Recorte da foto ${cropModalState!.index + 1}`}
                   fill
                   sizes="(max-width: 768px) calc(100vw - 32px), 720px"
                   className="object-cover"
                   style={{
-                    transform: `translate(${getProductImageCropOffsetPercentage(cropModalState.crop.offsetX)}%, ${getProductImageCropOffsetPercentage(cropModalState.crop.offsetY)}%) scale(${cropModalState.crop.zoom})`,
+                    transform: `translate(${getProductImageCropOffsetPercentage(cropModalState!.crop.offsetX)}%, ${getProductImageCropOffsetPercentage(cropModalState!.crop.offsetY)}%) scale(${cropModalState!.crop.zoom})`,
                     transformOrigin: "center",
                   }}
                   unoptimized
@@ -782,7 +789,7 @@ export function AdministrationProductDrawer({
                       min="1"
                       max="2.6"
                       step="0.1"
-                      value={cropModalState.crop.zoom}
+                      value={cropModalState!.crop.zoom}
                       onChange={(event) => handleCropValueChange({ zoom: Number(event.target.value) })}
                       className="w-full accent-black"
                     />
@@ -800,7 +807,7 @@ export function AdministrationProductDrawer({
                       min={-productImageCropOffsetLimit}
                       max={productImageCropOffsetLimit}
                       step="2"
-                      value={cropModalState.crop.offsetX}
+                      value={cropModalState!.crop.offsetX}
                       onChange={(event) =>
                         handleCropValueChange({ offsetX: Number(event.target.value) })
                       }
@@ -820,7 +827,7 @@ export function AdministrationProductDrawer({
                       min={-productImageCropOffsetLimit}
                       max={productImageCropOffsetLimit}
                       step="2"
-                      value={cropModalState.crop.offsetY}
+                      value={cropModalState!.crop.offsetY}
                       onChange={(event) =>
                         handleCropValueChange({ offsetY: Number(event.target.value) })
                       }
@@ -852,6 +859,17 @@ export function AdministrationProductDrawer({
             </div>
           </div>
         </div>
+      ) : null) : null}
+      {cropModalState ? (
+        <ImageCropModal
+          imageUrl={cropModalState.imageUrl}
+          crop={cropModalState.crop}
+          title={`Recorte da foto ${cropModalState.index + 1}`}
+          isApplying={isApplyingCrop}
+          onCropChange={handleCropValueChange}
+          onCancel={handleCloseCropModal}
+          onApply={handleApplyCrop}
+        />
       ) : null}
     </div>
   );

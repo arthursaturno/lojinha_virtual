@@ -105,7 +105,7 @@ O editor administrativo prepara a foto no navegador somente depois da confirmaca
 - Usar apenas `anon public` no cliente;
 - Manter RLS e policies configuradas antes de expor buckets/tabelas publicamente.
 
-Para remover fotos pelo painel, o bucket `product-images` precisa permitir `select` e `delete` ao usuario autenticado quando a primeira pasta do arquivo for o seu `auth.uid()`. A migration local `supabase/migrations/20260902103000_fix_product_images_storage_policies.sql` garante essas policies para os caminhos legados e para os novos caminhos por produto.
+Para remover fotos pelo painel, o bucket `product-images` precisa permitir `select` e `delete` ao usuario autenticado quando a primeira pasta do arquivo for o seu `auth.uid()`. A migration local `supabase/migrations/20260902113000_harden_product_images_storage_policies.sql` garante essas policies para os caminhos legados e para os novos caminhos por produto.
 
 ## Quando Reavaliar
 
