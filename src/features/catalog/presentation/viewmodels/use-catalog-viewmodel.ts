@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCurrency } from "@/core/utils/format/currency";
 import type { PromotionCartBenefit, PromotionCartValidation } from "@/core/promotions/promotion";
 import type { Result } from "@/core/result/result";
-import type { StoreFilterOptions } from "@/core/store-filters/store-filter-options";
+import { getStorefrontProductPriority, type StoreFilterOptions } from "@/core/store-filters/store-filter-options";
 import type { CatalogProduct } from "@/features/catalog/domain/entities/catalog-product";
 import type { CatalogCartItem } from "@/features/catalog/domain/entities/catalog-cart-item";
 import type { GetCatalogCartUseCase } from "@/features/catalog/domain/usecases/get-catalog-cart-usecase";
@@ -150,7 +150,9 @@ export function useCatalogViewModel(
       return [...filtered].sort((first, second) => second.price - first.price);
     }
 
-    return filtered;
+    return [...filtered].sort(
+      (first, second) => getStorefrontProductPriority(first.category, first.name) - getStorefrontProductPriority(second.category, second.name),
+    );
   }, [colorFilters, modelFilters, sizeFilters, state]);
 
   const categoryCount = useMemo(

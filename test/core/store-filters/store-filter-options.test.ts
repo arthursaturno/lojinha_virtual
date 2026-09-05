@@ -6,12 +6,12 @@ import {
 } from "@/core/store-filters/store-filter-options";
 
 describe("prioritizeStorefrontCategories", () => {
-  it("shows Camisas, Shorts and Bermudas before the remaining categories", () => {
+  it("shows Camisetas, Camisas, Shorts and Bermudas before the remaining categories", () => {
     expect(prioritizeStorefrontCategories(["Camisetas", "BERMUDAS", "Tenis", "Camisa", "SHORTS"])).toEqual([
+      "Camisetas",
       "Camisa",
       "SHORTS",
       "BERMUDAS",
-      "Camisetas",
       "Tenis",
     ]);
   });
