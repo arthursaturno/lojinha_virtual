@@ -81,6 +81,18 @@ describe("useCatalogViewModel", () => {
     expect(result.current.filteredProducts).toHaveLength(2);
   });
 
+  it("prioritizes regular shirts and shorts while leaving team shirts at the end", () => {
+    const catalog = [
+      { ...products[1], id: "watch", name: "Relogio classico", category: "Acessorios" },
+      { ...products[0], id: "team", name: "Camisa de time PSG", category: "Camisas" },
+      { ...products[0], id: "shirt", name: "Camisa social", category: "Camisas" },
+      { ...products[0], id: "shorts", name: "Shorts de linho", category: "Shorts" },
+    ];
+    const { result } = renderHook(() => useCatalogViewModel(catalog));
+
+    expect(result.current.filteredProducts.map((product) => product.id)).toEqual(["shirt", "shorts", "watch", "team"]);
+  });
+
   it("enables checkout contact only after required variation selection", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 
