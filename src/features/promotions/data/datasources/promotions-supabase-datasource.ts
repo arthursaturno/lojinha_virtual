@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { PromotionCartBenefit, PromotionCartValidation, StorePromotion } from "@/core/promotions/promotion";
+import { maximumPromotionPopupImages, type PromotionCartBenefit, type PromotionCartValidation, type StorePromotion } from "@/core/promotions/promotion";
 import type { PromotionDto } from "@/features/promotions/data/dtos/promotion-dto";
 import type { PromotionImageUpload } from "@/features/promotions/domain/repositories/promotions-repository";
 
@@ -15,6 +15,8 @@ export type PromotionsDataSource = {
 };
 
 const promotionSelect = "id, internal_name, kind, image_url, is_active, priority, starts_at, ends_at, promotion_images(image_url, position), promotion_products(id, target_type, product_id, target_value, discount_type, discount_value, buy_quantity, pay_quantity), promotion_benefits(id, kind, title, description, minimum_amount, discount_type, discount_value)";
+const promotionImagesBucket = "promotion-images";
+const promotionImagesPublicPathPrefix = "/storage/v1/object/public/promotion-images/";
 
 export class PromotionsSupabaseDataSource implements PromotionsDataSource {
   constructor(private readonly supabaseClient: SupabaseClient) {}
@@ -55,11 +57,13 @@ export class PromotionsSupabaseDataSource implements PromotionsDataSource {
       starts_at: promotion.startsAt ?? null,
       ends_at: promotion.endsAt ?? null,
     };
-    const promotionId = promotion.id.startsWith("draft-")
-      ? await this.createOrReuseCampaign(row, authData.user.id, promotion.kind)
-      : await this.update(promotion.id, row);
-
-    const previousImageUrls = await this.getImageUrls(promotionId);
+    const existingPromotionId = promotion.id.startsWith("draft-")
+      ? await this.findCampaignId(authData.user.id, promotion.kind)
+      : promotion.id;
+    const previousImageUrls = existingPromotionId ? await this.getImageUrls(existingPromotionId) : [];
+    const promotionId = existingPromotionId
+      ? await this.update(existingPromotionId, row)
+      : await this.create(row);
     const { error: removeProductRuleError } = await this.supabaseClient.from("promotion_products").delete().eq("promotion_id", promotionId);
     if (removeProductRuleError) throw new Error(removeProductRuleError.message);
     const { error: removeBenefitRuleError } = await this.supabaseClient.from("promotion_benefits").delete().eq("promotion_id", promotionId);
@@ -67,7 +71,7 @@ export class PromotionsSupabaseDataSource implements PromotionsDataSource {
     const { error: removeImagesError } = await this.supabaseClient.from("promotion_images").delete().eq("promotion_id", promotionId);
     if (removeImagesError) throw new Error(removeImagesError.message);
 
-    const imageUrls = (promotion.imageUrls ?? (promotion.imageUrl ? [promotion.imageUrl] : [])).slice(0, 5);
+    const imageUrls = (promotion.imageUrls ?? (promotion.imageUrl ? [promotion.imageUrl] : [])).slice(0, maximumPromotionPopupImages);
     if (imageUrls.length) {
       const { error: insertImagesError } = await this.supabaseClient.from("promotion_images").insert(
         imageUrls.map((imageUrl, position) => ({ promotion_id: promotionId, owner_id: authData.user.id, image_url: imageUrl, position })),
@@ -115,6 +119,9 @@ export class PromotionsSupabaseDataSource implements PromotionsDataSource {
   }
 
   async delete(promotion: StorePromotion): Promise<void> {
+    const { data: authData, error: authError } = await this.supabaseClient.auth.getUser();
+    if (authError || !authData.user) throw new Error("Sessao administrativa nao encontrada.");
+
     const imageUrls = await this.getImageUrls(promotion.id);
     await this.deleteImages([...new Set([...imageUrls, ...(promotion.imageUrls ?? []), ...(promotion.imageUrl ? [promotion.imageUrl] : [])])]);
 
@@ -181,12 +188,19 @@ export class PromotionsSupabaseDataSource implements PromotionsDataSource {
   }
 
   private getStoragePath(imageUrl: string): string | null {
-    const marker = "/storage/v1/object/public/promotion-images/";
-    const markerIndex = imageUrl.indexOf(marker);
-    return markerIndex >= 0 ? imageUrl.slice(markerIndex + marker.length) : null;
+    try {
+      const pathname = new URL(imageUrl).pathname;
+      const pathStart = pathname.indexOf(promotionImagesPublicPathPrefix);
+
+      return pathStart >= 0
+        ? decodeURIComponent(pathname.slice(pathStart + promotionImagesPublicPathPrefix.length))
+        : null;
+    } catch {
+      return null;
+    }
   }
 
-  private async createOrReuseCampaign(row: Record<string, unknown>, ownerId: string, kind: StorePromotion["kind"]): Promise<string> {
+  private async findCampaignId(ownerId: string, kind: StorePromotion["kind"]): Promise<string | null> {
     const { data: existing, error: existingError } = await this.supabaseClient
       .from("promotions")
       .select("id")
@@ -196,27 +210,68 @@ export class PromotionsSupabaseDataSource implements PromotionsDataSource {
       .limit(1)
       .maybeSingle();
     if (existingError) throw new Error(existingError.message);
-    if (existing) return this.update(existing.id, row);
-    return this.create(row);
+    return existing?.id ?? null;
   }
 
   private async getImageUrls(promotionId: string): Promise<string[]> {
     const { data, error } = await this.supabaseClient
-      .from("promotion_images")
-      .select("image_url")
-      .eq("promotion_id", promotionId);
+      .from("promotions")
+      .select("image_url, promotion_images(image_url)")
+      .eq("id", promotionId)
+      .maybeSingle();
     if (error) throw new Error(error.message);
-    return (data ?? []).map((image) => image.image_url);
+    if (!data) return [];
+
+    return [
+      ...(data.image_url ? [data.image_url] : []),
+      ...((data.promotion_images ?? []).map((image) => image.image_url)),
+    ];
   }
 
   private async deleteImages(imageUrls: string[]): Promise<void> {
-    const paths = imageUrls.flatMap((imageUrl) => {
+    const uniqueImageUrls = [...new Set(imageUrls)];
+    const paths = uniqueImageUrls.flatMap((imageUrl) => {
       const path = this.getStoragePath(imageUrl);
       return path ? [path] : [];
     });
+    if (paths.length !== uniqueImageUrls.length) {
+      throw new Error("Nao foi possivel localizar todas as fotos da promocao no Storage.");
+    }
     if (!paths.length) return;
 
-    const { error } = await this.supabaseClient.storage.from("promotion-images").remove(paths);
+    const bucket = this.supabaseClient.storage.from(promotionImagesBucket);
+    const { error } = await bucket.remove(paths);
     if (error) throw new Error(error.message);
+
+    const remainingPaths = await this.findRemainingStoragePaths(bucket, paths);
+    if (remainingPaths.length) {
+      throw new Error("Nao foi possivel apagar todas as fotos da promocao no Storage.");
+    }
+  }
+
+  private async findRemainingStoragePaths(
+    bucket: ReturnType<SupabaseClient["storage"]["from"]>,
+    paths: string[],
+  ): Promise<string[]> {
+    const pathsByFolder = paths.reduce<Map<string, Set<string>>>((groups, path) => {
+      const separatorIndex = path.lastIndexOf("/");
+      const folder = path.slice(0, separatorIndex);
+      const name = path.slice(separatorIndex + 1);
+      const names = groups.get(folder) ?? new Set<string>();
+      names.add(name);
+      groups.set(folder, names);
+      return groups;
+    }, new Map());
+
+    const remainingPaths: string[] = [];
+    for (const [folder, names] of pathsByFolder) {
+      const { data, error } = await bucket.list(folder, { limit: 1000 });
+      if (error) throw new Error(error.message);
+      for (const object of data ?? []) {
+        if (names.has(object.name)) remainingPaths.push(`${folder}/${object.name}`);
+      }
+    }
+
+    return remainingPaths;
   }
 }

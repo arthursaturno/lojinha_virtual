@@ -23,7 +23,7 @@ export class PromotionsRepositoryImpl implements PromotionsRepository {
 
   async delete(promotion: Parameters<PromotionsRepository["delete"]>[0]) {
     try { await this.dataSource.delete(promotion); return Result.success(undefined); }
-    catch { return Result.failure({ type: "unknown", message: "Nao foi possivel excluir a promocao." }); }
+    catch (error) { return Result.failure({ type: "unknown", message: error instanceof Error ? error.message : "Nao foi possivel excluir a promocao." }); }
   }
 
   async uploadImage(upload: PromotionImageUpload) {

@@ -10,7 +10,7 @@ export class SavePromotionUseCase {
       return Promise.resolve(Result.failure<StorePromotion>({ type: "validation", message: "Informe o nome interno da promocao." }));
     }
 
-    if (promotion.kind === "popup" && !(promotion.imageUrls?.length ?? 0) && !promotion.imageUrl) {
+    if (promotion.kind === "popup" && promotion.isActive && !(promotion.imageUrls?.length ?? 0) && !promotion.imageUrl) {
       return Promise.resolve(Result.failure<StorePromotion>({ type: "validation", message: "Envie a imagem da campanha." }));
     }
 
