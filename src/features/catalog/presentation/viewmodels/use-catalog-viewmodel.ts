@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatCurrency } from "@/core/utils/format/currency";
+import { getPromotionalVariantPrice } from "@/core/promotions/get-promotional-variant-price";
 import type { PromotionCartBenefit, PromotionCartValidation } from "@/core/promotions/promotion";
 import type { Result } from "@/core/result/result";
 import { getStorefrontProductPriority, prioritizeStorefrontCategories, type StoreFilterOptions } from "@/core/store-filters/store-filter-options";
@@ -200,11 +201,13 @@ export function useCatalogViewModel(
       selectedVariant &&
       (state.selectedProduct?.stockQuantity ?? 0) > 0,
   );
-  const selectedProductBasePrice = state.selectedProduct?.originalPrice ?? state.selectedProduct?.price ?? 0;
-  const selectedProductPromotionRatio = selectedProductBasePrice > 0
-    ? (state.selectedProduct?.price ?? 0) / selectedProductBasePrice
-    : 1;
-  const activeUnitPrice = (selectedVariant?.price ?? state.selectedProduct?.price ?? 0) * selectedProductPromotionRatio;
+  const activeUnitPrice = state.selectedProduct
+    ? getPromotionalVariantPrice({
+      productPrice: state.selectedProduct.price,
+      productOriginalPrice: state.selectedProduct.originalPrice,
+      variantPrice: selectedVariant?.price,
+    }).price
+    : 0;
   const orderTotal = activeUnitPrice * state.selection.quantity;
   const cartTotal = state.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0);
   const checkoutTotal = state.promotionValidation ? state.promotionValidation.finalTotal : cartTotal;

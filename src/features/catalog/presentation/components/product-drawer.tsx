@@ -7,6 +7,7 @@ import { FiChevronLeft, FiChevronRight, FiHeadphones, FiMaximize2, FiTruck, FiX 
 
 import { catalogProductImageAspectRatio } from "@/core/theme/catalog";
 import { catalogTypography } from "@/core/theme/tokens";
+import { getPromotionalVariantPrice } from "@/core/promotions/get-promotional-variant-price";
 import { formatCurrency } from "@/core/utils/format/currency";
 import type {
   CatalogProduct,
@@ -43,9 +44,11 @@ export function ProductDrawer({
   const sizes = Array.from(new Set(product.variants.map((variant) => variant.size)));
   const colors = Array.from(new Set(product.variants.map((variant) => variant.color)));
   const models = Array.from(new Set(product.variants.map((variant) => variant.model)));
-  const variantPrice = selectedVariant?.price ?? product.price;
-  const promotionRatio = product.originalPrice && product.originalPrice > 0 ? product.price / product.originalPrice : 1;
-  const activePrice = variantPrice * promotionRatio;
+  const activePrice = getPromotionalVariantPrice({
+    productPrice: product.price,
+    productOriginalPrice: product.originalPrice,
+    variantPrice: selectedVariant?.price,
+  });
   const currentImage = product.images[imageIndex] ?? product.images[0];
   const availableQuantity = product.stockQuantity;
 
@@ -133,7 +136,7 @@ export function ProductDrawer({
           {product.promotionLabel ?? product.badge ?? "NOVO"}
         </span>
         <h2 className="my-2 text-xl font-extrabold">{product.name}</h2>
-        <div>{product.originalPrice ? <span className="mr-2 text-[var(--color-muted)] line-through">{formatCurrency(variantPrice)}</span> : null}<strong className="text-2xl font-black">{formatCurrency(activePrice)}</strong></div>
+        <div>{activePrice.originalPrice ? <span className="mr-2 text-[var(--color-muted)] line-through">{formatCurrency(activePrice.originalPrice)}</span> : null}<strong className="text-2xl font-black">{formatCurrency(activePrice.price)}</strong></div>
         {product.description?.trim() ? (
           <section className="mt-4 border-y border-[var(--color-border)] py-4">
             <h3 className="font-black text-[var(--color-foreground)]" style={{ fontSize: catalogTypography.purchaseDrawerItem }}>
