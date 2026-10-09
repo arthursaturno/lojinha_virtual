@@ -7,6 +7,8 @@ const storefrontCategoryPriority = new Map([
   ["camisetas", 0],
   ["camisa", 0],
   ["camisas", 0],
+  ["polo", 0],
+  ["polos", 0],
   ["short", 1],
   ["shorts", 1],
   ["bermuda", 2],
@@ -52,11 +54,12 @@ export function getStorefrontCategoryPriority(category: string): number {
 
 export function getStorefrontProductPriority(category: string, productName: string): number {
   const normalizedProductName = normalizeStorefrontText(productName);
+  const categoryPriority = getStorefrontCategoryPriority(category);
   const isPoloShirt = normalizedProductName.includes("camisa polo");
-  const isTeamShirt = (getStorefrontCategoryPriority(category) === 0 || isPoloShirt) && /\btime\b/.test(normalizedProductName);
+  const isTeamShirt = (categoryPriority === 0 || isPoloShirt) && /\btime\b/.test(normalizedProductName);
 
   if (isTeamShirt) return Number.MAX_SAFE_INTEGER;
   if (isPoloShirt) return 0;
 
-  return getStorefrontCategoryPriority(category);
+  return categoryPriority;
 }

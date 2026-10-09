@@ -73,7 +73,7 @@ describe("useCatalogViewModel", () => {
     expect(result.current.filteredProducts[0].name).toBe("Bolsa Utility Cross");
   });
 
-  it("uses real product categories and starts with all products selected", () => {
+  it("uses prioritized product categories and starts with all products selected", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 
     expect(result.current.state.category).toBe("Todos");
@@ -81,16 +81,17 @@ describe("useCatalogViewModel", () => {
     expect(result.current.filteredProducts).toHaveLength(2);
   });
 
-  it("prioritizes regular shirts and shorts while leaving team shirts at the end", () => {
+  it("prioritizes regular shirts, polos and shorts while leaving team shirts at the end", () => {
     const catalog = [
       { ...products[1], id: "watch", name: "Relogio classico", category: "Acessorios" },
       { ...products[0], id: "team", name: "Camisa de time PSG", category: "Camisas" },
       { ...products[0], id: "shirt", name: "Camisa social", category: "Camisas" },
+      { ...products[0], id: "polo", name: "Polo lisa", category: "Polos" },
       { ...products[0], id: "shorts", name: "Shorts de linho", category: "Shorts" },
     ];
     const { result } = renderHook(() => useCatalogViewModel(catalog));
 
-    expect(result.current.filteredProducts.map((product) => product.id)).toEqual(["shirt", "shorts", "watch", "team"]);
+    expect(result.current.filteredProducts.map((product) => product.id)).toEqual(["shirt", "polo", "shorts", "watch", "team"]);
   });
 
   it("enables checkout contact only after required variation selection", () => {
@@ -168,19 +169,19 @@ describe("useCatalogViewModel", () => {
     expect(save).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ quantity: 2 })]));
   });
 
-  it("paginates catalog products with ten items per page", () => {
-    const manyProducts = Array.from({ length: 12 }, (_, index) => makeProduct(index + 1));
+  it("paginates catalog products with fifteen items per page", () => {
+    const manyProducts = Array.from({ length: 17 }, (_, index) => makeProduct(index + 1));
     const { result } = renderHook(() => useCatalogViewModel(manyProducts));
 
-    expect(result.current.pageSize).toBe(10);
+    expect(result.current.pageSize).toBe(15);
     expect(result.current.totalPages).toBe(2);
     expect(result.current.currentPage).toBe(1);
-    expect(result.current.paginatedProducts).toHaveLength(10);
+    expect(result.current.paginatedProducts).toHaveLength(15);
 
     act(() => result.current.actions.updateCurrentPage(2));
 
     expect(result.current.currentPage).toBe(2);
     expect(result.current.paginatedProducts).toHaveLength(2);
-    expect(result.current.paginatedProducts[0].name).toBe("Produto 11");
+    expect(result.current.paginatedProducts[0].name).toBe("Produto 16");
   });
 });
