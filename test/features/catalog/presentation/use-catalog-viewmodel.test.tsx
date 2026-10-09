@@ -121,6 +121,27 @@ describe("useCatalogViewModel", () => {
     expect(result.current.orderTotal).toBeCloseTo(659.7);
   });
 
+  it("does not apply the product discount twice when the variant is already discounted", () => {
+    const discountedProduct: CatalogProduct = {
+      ...products[0],
+      price: 39.92,
+      originalPrice: 49.9,
+      variants: [
+        {
+          ...products[0].variants[0],
+          price: 39.92,
+        },
+      ],
+    };
+    const { result } = renderHook(() => useCatalogViewModel([discountedProduct]));
+
+    act(() => result.current.actions.openProduct(discountedProduct));
+    act(() => result.current.actions.updateSelection({ size: "G", color: "Preto", model: "Oversized" }));
+
+    expect(result.current.activeUnitPrice).toBeCloseTo(39.92);
+    expect(result.current.orderTotal).toBeCloseTo(39.92);
+  });
+
   it("keeps the selected quantity when changing product details", () => {
     const { result } = renderHook(() => useCatalogViewModel(products));
 
